@@ -19,6 +19,7 @@ export const initState = () => {
       mouseY: 0,
       self: false,
       dbClick: false,
+      altKey: false,
       shiftKey: false,
       ctrlKey: false,
       metaKey: false,
@@ -32,8 +33,9 @@ export const initState = () => {
      * which could be in a standalone window or in-page element.
      */
     isQSPanel: isQuickSearchPage(),
+    isQSFocus: config.qsFocus,
     /** is a standalone quick search panel running */
-    withQSPanel: false,
+    withQssaPanel: false,
     wordEditor: {
       isShow: false,
       word: newWord(),
@@ -41,7 +43,7 @@ export const initState = () => {
       translateCtx: false
     },
     isShowBowl: false,
-    isShowDictPanel: isStandalonePage() || isOptionsPage(),
+    isShowDictPanel: isStandalonePage(),
     isExpandMtaBox: false,
     isExpandWaveformBox: false,
     isPinned: false,
@@ -69,6 +71,8 @@ export const initState = () => {
       readonly searchStatus: 'IDLE' | 'SEARCHING' | 'FINISH'
       readonly searchResult: any
     }[],
+    /** User manually folded or unfolded */
+    userFoldedDicts: {} as { [id in DictID]?: boolean },
     /** Search text */
     text: '',
     /** 0 is the oldest */
@@ -77,16 +81,10 @@ export const initState = () => {
     historyIndex: -1,
     /** Record init coordinate on dragstart */
     dragStartCoord: null as null | { x: number; y: number },
-    lastPlayAudio: null as null | { src: string; timestamp: number },
-    colors: {
-      backgroundColor: '#fff',
-      color: '#333',
-      '--color-brand': '#5caf9e',
-      '--color-background': '#fff',
-      '--color-rgb-background': '255, 255, 255',
-      '--color-font': '#333',
-      '--color-divider': '#ddd'
-    } as React.CSSProperties
+    lastPlayAudio: null as null | { src: string; timestamp: number }
   }
 }
+
+export type State = ReturnType<typeof initState>
+
 export default initState

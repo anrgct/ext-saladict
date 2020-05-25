@@ -1,5 +1,5 @@
 import { getDefaultConfig, AppConfig, AppConfigMutable } from '@/app-config'
-import { getAllDicts } from './dicts'
+import { defaultAllDicts } from './dicts'
 
 import forEach from 'lodash/forEach'
 import isNumber from 'lodash/isNumber'
@@ -7,8 +7,6 @@ import isString from 'lodash/isString'
 import isBoolean from 'lodash/isBoolean'
 import get from 'lodash/get'
 import set from 'lodash/set'
-
-const defaultAllDicts = getAllDicts()
 
 export default mergeConfig
 
@@ -23,6 +21,10 @@ export function mergeConfig(
   // pre-merge patch start
   let oldVersion = oldConfig.version
 
+  if (oldVersion < 13) {
+    ;(oldConfig as AppConfigMutable).showedDictAuth = true
+  }
+
   if (oldVersion <= 9) {
     oldVersion = 10
     ;['mode', 'pinMode', 'panelMode', 'qsPanelMode'].forEach(mode => {
@@ -32,6 +34,15 @@ export function mergeConfig(
       delete oldConfig[mode]['ctrl']
     })
   }
+
+  rename('tripleCtrlPreload', 'qsPreload')
+  rename('tripleCtrlAuto', 'qsAuto')
+  rename('tripleCtrlLocation', 'qsLocation')
+  rename('tripleCtrlStandalone', 'qsStandalone')
+  rename('tripleCtrlHeight', 'qssaHeight')
+  rename('tripleCtrlSidebar', 'qssaSidebar')
+  rename('tripleCtrlPageSel', 'qssaPageSel')
+
   // pre-merge patch end
 
   Object.keys(base).forEach(key => {
@@ -45,6 +56,14 @@ export function mergeConfig(
       case 'blacklist':
         merge(key, val => Array.isArray(val))
         break
+      case 'searhHistory':
+      case 'searchHistory':
+        base.searchHistory = oldConfig[key]
+        break
+      case 'searhHistoryInco':
+      case 'searchHistoryInco':
+        base.searchHistoryInco = oldConfig[key]
+        break
       case 'mode':
       case 'pinMode':
       case 'panelMode':
@@ -54,6 +73,7 @@ export function mergeConfig(
         }
         mergeBoolean(`${key}.direct`)
         mergeBoolean(`${key}.double`)
+        mergeBoolean(`${key}.holding.alt`)
         mergeBoolean(`${key}.holding.shift`)
         mergeBoolean(`${key}.holding.ctrl`)
         mergeBoolean(`${key}.holding.meta`)
@@ -63,15 +83,15 @@ export function mergeConfig(
         )
         mergeNumber(`${key}.instant.delay`)
         break
-      case 'tripleCtrlPreload':
+      case 'qsPreload':
         merge(
-          'tripleCtrlPreload',
+          'qsPreload',
           val => val === '' || val === 'clipboard' || val === 'selection'
         )
         break
-      case 'tripleCtrlLocation':
+      case 'qsLocation':
         merge(
-          'tripleCtrlLocation',
+          'qsLocation',
           val =>
             val === 'CENTER' ||
             val === 'TOP' ||
@@ -125,6 +145,9 @@ export function mergeConfig(
         })
         mergeSelectedContextMenus('contextMenus')
         break
+      case 'dictAuth':
+        merge('dictAuth', Boolean)
+        break
       default:
         switch (typeof base[key]) {
           case 'string':
@@ -174,6 +197,15 @@ export function mergeConfig(
   // post-merge patch end
 
   return base
+
+  function rename(oldName: string, newName: string): void {
+    if (
+      !Object.prototype.hasOwnProperty.call(oldConfig, newName) &&
+      Object.prototype.hasOwnProperty.call(oldConfig, oldName)
+    ) {
+      ;(oldConfig as AppConfigMutable)[newName] = oldConfig[oldName]
+    }
+  }
 
   function mergeSelectedContextMenus(path: string): void {
     const selected = get(oldConfig, [path, 'selected'])

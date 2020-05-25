@@ -1,4 +1,5 @@
 import React, { FC, useState, useRef, useEffect } from 'react'
+import classNames from 'classnames'
 import QRCode from 'qrcode.react'
 import CSSTransition from 'react-transition-group/CSSTransition'
 import { AppConfig } from '@/app-config'
@@ -52,9 +53,8 @@ export const Popup: FC<PopupProps> = props => {
             })
 
           message
-            .send<'QUERY_PANEL_STATE', boolean>(tabs[0].id, {
-              type: 'QUERY_PANEL_STATE',
-              payload: 'widget.isPinned'
+            .send<'QUERY_PIN_STATE', boolean>(tabs[0].id, {
+              type: 'QUERY_PIN_STATE'
             })
             .then(isPinned => {
               setInsCapMode(isPinned ? 'pinMode' : 'mode')
@@ -67,7 +67,7 @@ export const Popup: FC<PopupProps> = props => {
   }, [])
 
   return (
-    <div className={`popup-root${config.darkMode ? ' dark-mode' : ''}`}>
+    <div className={classNames('popup-root', { 'dark-mode': config.darkMode })}>
       <DictPanelStandaloneContainer
         width="100vw"
         height={dictPanelHeight + 'px'}

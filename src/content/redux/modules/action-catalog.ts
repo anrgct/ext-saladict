@@ -1,9 +1,10 @@
+import { CreateActionCatalog } from 'retux'
 import { AppConfig, DictID } from '@/app-config'
 import { Profile, ProfileIDList } from '@/app-config/profiles'
 import { Message } from '@/typings/message'
 import { Word } from '@/_helpers/record-manager'
 
-export type ActionCatalog = {
+export type ActionCatalog = CreateActionCatalog<{
   NEW_CONFIG: {
     payload: AppConfig
   }
@@ -19,6 +20,8 @@ export type ActionCatalog = {
   NEW_SELECTION: {
     payload: Message<'SELECTION'>['payload']
   }
+
+  WINDOW_RESIZE: {}
 
   /** Is App temporary disabled */
   TEMP_DISABLED_STATE: {
@@ -41,6 +44,16 @@ export type ActionCatalog = {
   TOGGLE_WAVEFORM_BOX: {}
 
   TOGGLE_PIN: {}
+
+  /** Focus button on quick search panel */
+  TOGGLE_QS_FOCUS: {}
+
+  OPEN_PANEL: {
+    payload: {
+      x: number
+      y: number
+    }
+  }
 
   CLOSE_PANEL: {}
 
@@ -82,6 +95,14 @@ export type ActionCatalog = {
       height: number
       /** independent layer */
       floatHeight?: number
+    }
+  }
+
+  /** User manually folds or unfolds dict item */
+  USER_FOLD_DICT: {
+    payload: {
+      id: DictID
+      fold: boolean
     }
   }
 
@@ -129,4 +150,4 @@ export type ActionCatalog = {
       timestamp: number
     }
   }
-}
+}>

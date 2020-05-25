@@ -16,7 +16,10 @@ type DictListItemKeys =
   | 'dictComp'
 
 export interface DictListProps
-  extends Omit<DictItemProps, DictListItemKeys | 'onHeightChanged'> {
+  extends Omit<
+    DictItemProps,
+    DictListItemKeys | 'onHeightChanged' | 'onInPanelSelect'
+  > {
   dicts: Pick<DictItemProps, DictListItemKeys>[]
   onHeightChanged: (height: number) => void
 
@@ -28,6 +31,7 @@ export interface DictListProps
     mouseX: number
     mouseY: number
     dbClick: boolean
+    altKey: boolean
     shiftKey: boolean
     ctrlKey: boolean
     metaKey: boolean

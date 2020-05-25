@@ -1,34 +1,32 @@
 import mapValues from 'lodash/mapValues'
 import { message, storage, openURL } from '@/_helpers/browser-api'
 import { isExtTainted } from '@/_helpers/integrity'
-import checkUpdate from '@/_helpers/check-update'
+import { checkUpdate } from '@/_helpers/check-update'
 import { updateConfig, initConfig } from '@/_helpers/config-manager'
-import { initProfiles } from '@/_helpers/profile-manager'
+import { initProfiles, updateActiveProfileID } from '@/_helpers/profile-manager'
 import { injectDictPanel } from '@/_helpers/injectSaladictInternal'
+import { isFirefox } from '@/_helpers/saladict'
+import { timer } from '@/_helpers/promise-more'
 import { ContextMenus } from './context-menus'
 import { BackgroundServer } from './server'
 import { openPDF } from './pdf-sniffer'
 import './types'
 
-interface UpdateData {
-  name?: string
-  body?: string
-  tag_name?: string
-}
-
 browser.runtime.onInstalled.addListener(onInstalled)
 browser.runtime.onStartup.addListener(onStartup)
 browser.notifications.onClicked.addListener(
-  genClickListener('https://github.com/crimx/ext-saladict/releases')
+  genClickListener('https://saladict.crimx.com/releases/')
 )
 if (browser.notifications.onButtonClicked) {
   // Firefox doesn't support
   browser.notifications.onButtonClicked.addListener(
-    genClickListener('https://github.com/crimx/ext-saladict/releases')
+    genClickListener('https://saladict.crimx.com/releases/')
   )
 }
 
 browser.commands.onCommand.addListener(onCommand)
+
+const getText = decodeURI
 
 function onCommand(command: string) {
   switch (command) {
@@ -44,9 +42,8 @@ function onCommand(command: string) {
           return
         }
         message
-          .send<'QUERY_PANEL_STATE', boolean>(tabs[0].id, {
-            type: 'QUERY_PANEL_STATE',
-            payload: 'widget.isPinned'
+          .send<'QUERY_PIN_STATE', boolean>(tabs[0].id, {
+            type: 'QUERY_PIN_STATE'
           })
           .then(isPinned => {
             const config = window.appConfig
@@ -87,6 +84,42 @@ function onCommand(command: string) {
     case 'search-clipboard':
       BackgroundServer.getInstance().searchClipboard()
       break
+    case 'next-profile':
+    case 'prev-profile':
+      {
+        const curID = window.activeProfile.id
+        const curIndex = window.profileIDList.findIndex(
+          ({ id }) => id === curID
+        )
+        const offset = command === 'next-profile' ? 1 : -1
+        const nextIndex =
+          curIndex < 0 ? 0 : (curIndex + offset) % window.profileIDList.length
+
+        updateActiveProfileID(window.profileIDList[nextIndex].id).then(
+          searchTextBox
+        )
+      }
+      break
+    case 'profile-1':
+    case 'profile-2':
+    case 'profile-3':
+    case 'profile-4':
+    case 'profile-5':
+      {
+        const index = +command.slice(-1)
+        if (
+          index < window.profileIDList.length &&
+          window.profileIDList[index].id !== window.activeProfile.id
+        ) {
+          updateActiveProfileID(window.profileIDList[index].id).then(
+            searchTextBox
+          )
+        }
+      }
+      break
+    case 'add-notebook':
+      addNotebook()
+      break
   }
 }
 
@@ -121,30 +154,34 @@ async function onInstalled({
       storage.sync.set({ hasInstructionsShown: true })
     }
   } else if (reason === 'update') {
-    let data: UpdateData | undefined
-    if (!process.env.DEV_BUILD && window.appConfig.updateCheck) {
-      try {
-        const response = await fetch(
-          'https://api.github.com/repos/crimx/ext-saladict/releases/latest'
-        )
-        data = await response.json()
-      } catch (e) {
-        /* */
-      }
-    }
+    if (!process.env.DEBUG) {
+      const curr = await checkUpdate(browser.runtime.getManifest().version)
+      // same version as server
+      if (curr.data && curr.diff === 0) {
+        const { diff, data } = await checkUpdate(previousVersion, curr.data)
+        if (data && diff >= 2) {
+          setTimeout(() => {
+            const isZh = window.appConfig.langCode.startsWith('zh')
+            const options = {
+              type: 'basic',
+              iconUrl: browser.runtime.getURL(`assets/icon-128.png`),
+              title: isZh
+                ? `沙拉查词已更新到 ${data.version}`
+                : `Saladict has updated to ${data.version}`,
+              message: data.data
+                .map((line, i) => `${i + 1}. ${line}`)
+                .join('\n'),
+              priority: 2,
+              eventTime: Date.now() + 5000
+            } as any
 
-    if (data) {
-      if ((data.name && data.name.endsWith('#')) || !previousVersion) {
-        showNews(data)
-      } else if (previousVersion) {
-        // ignore patch updates
-        const prev = previousVersion.split('.')
-        const curr = browser.runtime.getManifest().version.split('.')
-        if (
-          +prev[0] < +curr[0] ||
-          (prev[0] === curr[0] && +prev[1] < +curr[1])
-        ) {
-          showNews(data)
+            if (!isFirefox) {
+              options.buttons = [{ title: isZh ? '查看更新介绍' : 'More Info' }]
+              options.silent = true
+            }
+
+            browser.notifications.create('sd-install', options)
+          }, 5000)
         }
       }
     }
@@ -154,61 +191,74 @@ async function onInstalled({
 }
 
 function onStartup(): void {
-  // check update every week
-  storage.local
-    .get<{ lastCheckUpdate: number }>('lastCheckUpdate')
-    .then(({ lastCheckUpdate }) => {
-      const today = Date.now()
-      if (
-        !lastCheckUpdate ||
-        !(today - lastCheckUpdate < 20 * 24 * 60 * 60 * 1000)
-      ) {
-        checkUpdate().then(({ info, isAvailable }) => {
-          storage.local.set({ lastCheckUpdate: today })
-          if (isAvailable) {
-            const options: browser.notifications.CreateNotificationOptions = {
-              type: 'basic',
-              iconUrl: browser.runtime.getURL(`assets/icon-128.png`),
-              title: decodeURI('%E6%B2%99%E6%8B%89%E6%9F%A5%E8%AF%8D'),
-              message: `可更新至【${info.tag_name}】`
+  setTimeout(() => {
+    // wait for appConfig being loaded
+    if (!process.env.DEBUG && window.appConfig.updateCheck) {
+      storage.local
+        .get<{ lastCheckUpdate: number }>('lastCheckUpdate')
+        .then(async ({ lastCheckUpdate }) => {
+          const today = Date.now()
+          if (!lastCheckUpdate) {
+            storage.local.set({ lastCheckUpdate: today })
+          } else if (today - lastCheckUpdate > 7 * 24 * 60 * 60 * 1000) {
+            storage.local.set({ lastCheckUpdate: today })
+            const { data, diff } = await checkUpdate(
+              browser.runtime.getManifest().version
+            )
+            if (data && diff > 0) {
+              const options: browser.notifications.CreateNotificationOptions = {
+                type: 'basic',
+                iconUrl: browser.runtime.getURL(`assets/icon-128.png`),
+                title: getText('%E6%B2%99%E6%8B%89%E6%9F%A5%E8%AF%8D'),
+                message: `${getText('%E5%8F%AF%E6%9B%B4%E6%96%B0%E8%87%B3')}【${
+                  data.version
+                }】`
+              }
+              if (!isFirefox) {
+                options.buttons = [
+                  { title: getText('%E6%9F%A5%E7%9C%8B%E6%9B%B4%E6%96%B0') }
+                ]
+              }
+              browser.notifications.create('sd-update', options)
             }
-
-            if (!navigator.userAgent.includes('Firefox')) {
-              options.buttons = [{ title: '查看更新' }]
-            }
-
-            browser.notifications.create('update', options)
           }
         })
-      }
+    }
+  }, 1000)
 
-      // anti piracy
-      if (!process.env.DEV_BUILD && lastCheckUpdate && isExtTainted) {
-        const diff = Math.floor((today - lastCheckUpdate) / 24 / 60 / 60 / 1000)
-        if (diff > 0 && diff % 7 === 0) {
-          const options: browser.notifications.CreateNotificationOptions = {
-            type: 'basic',
-            iconUrl: browser.runtime.getURL(`assets/icon-128.png`),
-            title: decodeURI('%E6%B2%99%E6%8B%89%E6%9F%A5%E8%AF%8D'),
-            message: decodeURI(
-              '%E6%AD%A4%E3%80%8C%E6%B2%99%E6%8B%89%E6%9F%A5%E8%AF%8D%E3%80%8D%E6%89%A9%E5%B1%95%E5%B7%B2%E8%A2%AB%E4%BA%8C%E6%AC%A1%E6%89%93%E5%8C%85%EF%BC%8C%E8%AF%B7%E5%9C%A8%E5%AE%98%E6%96%B9%E5%BB%BA%E8%AE%AE%E7%9A%84%E5%B9%B3%E5%8F%B0%E5%AE%89%E8%A3%85%E3%80%82'
-            )
-          }
-
-          if (!navigator.userAgent.includes('Firefox')) {
-            options.buttons = [
-              {
-                title: decodeURI(
-                  '%E6%9F%A5%E7%9C%8B%E5%8F%AF%E9%9D%A0%E7%9A%84%E5%B9%B3%E5%8F%B0'
-                )
-              }
-            ]
-          }
-
-          browser.notifications.create('update', options)
+  if (!process.env.DEBUG && isExtTainted) {
+    storage.local.get<{ swat: number }>('swat').then(({ swat }) => {
+      const today = Date.now()
+      if (!swat) {
+        storage.local.set({ swat: today })
+      } else if (today - swat > 10 * 24 * 60 * 60 * 1000) {
+        storage.local.set({ swat: today })
+        const options: browser.notifications.CreateNotificationOptions = {
+          type: 'basic',
+          iconUrl: browser.runtime.getURL(`assets/icon-128.png`),
+          title: getText('%E6%B2%99%E6%8B%89%E6%9F%A5%E8%AF%8D'),
+          message: getText(
+            '%E6%AD%A4%E3%80%8C%E6%B2%99%E6%8B%89%E6%9F%A5%E8%' +
+              'AF%8D%E3%80%8D%E6%89%A9%E5%B1%95%E5%B7%B2%E8%A2' +
+              '%AB%E4%BA%8C%E6%AC%A1%E6%89%93%E5%8C%85%EF%BC%8' +
+              'C%E8%AF%B7%E5%9C%A8%E5%AE%98%E6%96%B9%E5%BB%BA%' +
+              'E8%AE%AE%E7%9A%84%E5%B9%B3%E5%8F%B0%E5%AE%89%E8' +
+              '%A3%85%E3%80%82'
+          )
         }
+        if (!isFirefox) {
+          options.buttons = [
+            {
+              title: getText(
+                '%E6%9F%A5%E7%9C%8B%E5%8F%AF%E9%9D%A0%E7%9A%84%E5%B9%B3%E5%8F%B0'
+              )
+            }
+          ]
+        }
+        browser.notifications.create('sd-update', options)
       }
     })
+  }
 
   // Chrome fails to inject css via manifest if the page is loaded
   // as "last opened tabs" when browser opens.
@@ -219,49 +269,18 @@ function onStartup(): void {
 
 function genClickListener(url: string) {
   return function clickListener(notificationId: string) {
-    if (!/^(oninstall|update)$/.test(notificationId)) {
-      return
-    }
-    openURL(url)
-    browser.notifications.getAll().then(notifications => {
-      Object.keys(notifications).forEach(id => browser.notifications.clear(id))
-    })
-  }
-}
-
-function showNews(data: UpdateData) {
-  setTimeout(() => {
-    const isZh = window.appConfig.langCode.startsWith('zh')
-    const lineMatcher = isZh ? /^\d+\..+/gm : /^ {3}.+/gm
-    const message = data.body
-      ? (data.body.match(lineMatcher) || []) // ordered list
-          .map(
-            (line, i) =>
-              `${i + 1}. ` +
-              line.slice(3).replace(/\[(.+)\](?:\(\S+\)|\[\S+\])/g, '$1') // strip markdown link
+    switch (notificationId) {
+      case 'sd-install':
+      case 'sd-update':
+        openURL(url)
+        browser.notifications.getAll().then(notifications => {
+          Object.keys(notifications).forEach(id =>
+            browser.notifications.clear(id)
           )
-          .join('\n')
-      : ''
-    if (data.tag_name) {
-      const options = {
-        type: 'basic',
-        iconUrl: browser.runtime.getURL(`assets/icon-128.png`),
-        title: isZh
-          ? `沙拉查词已更新到 ${data.tag_name}`
-          : `Saladict has updated to ${data.tag_name}`,
-        message,
-        priority: 2,
-        eventTime: Date.now() + 5000
-      } as any
-
-      if (!window.navigator.userAgent.includes('Firefox')) {
-        options.buttons = [{ title: isZh ? '查看更新介绍' : 'More Info' }]
-        options.silent = true
-      }
-
-      browser.notifications.create('oninstall', options)
+        })
+        break
     }
-  }, 5000)
+  }
 }
 
 async function loadDictPanelToAllTabs() {
@@ -274,4 +293,42 @@ async function loadDictPanelToAllTabs() {
       }
     }
   })
+}
+
+/** Search text box text on active tab */
+async function searchTextBox() {
+  await timer(10)
+
+  if (await message.send<'SEARCH_TEXT_BOX'>({ type: 'SEARCH_TEXT_BOX' })) {
+    return // popup page received
+  }
+
+  const tabs = await browser.tabs.query({
+    active: true,
+    currentWindow: true
+  })
+  if (tabs.length <= 0 || tabs[0].id == null) {
+    return
+  }
+  message.send(tabs[0].id, { type: 'SEARCH_TEXT_BOX' })
+}
+
+async function addNotebook() {
+  if (
+    await message.send<'ADD_NOTEBOOK'>({
+      type: 'ADD_NOTEBOOK',
+      payload: { popup: true }
+    })
+  ) {
+    return // popup page received
+  }
+
+  const tabs = await browser.tabs.query({
+    active: true,
+    currentWindow: true
+  })
+  if (tabs.length <= 0 || tabs[0].id == null) {
+    return
+  }
+  message.send(tabs[0].id, { type: 'ADD_NOTEBOOK', payload: { popup: false } })
 }

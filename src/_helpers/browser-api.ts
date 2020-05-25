@@ -292,7 +292,12 @@ function storageCreateStream<T = any>(
     handler => this.addListener(key, handler as StorageListenerCb),
     handler => this.removeListener(key, handler as StorageListenerCb)
   ).pipe(
-    filter(args => (Array.isArray(args) ? args[0] : args).hasOwnProperty(key)),
+    filter(args =>
+      Object.prototype.hasOwnProperty.call(
+        Array.isArray(args) ? args[0] : args,
+        key
+      )
+    ),
     map(args => (Array.isArray(args) ? args[0][key] : args[key]))
   )
 }
@@ -312,14 +317,16 @@ function messageSend<T extends MsgType, R = MessageResponse<T>>(
 function messageSend<T extends MsgType>(
   ...args: [Message<T>] | [number, Message<T>]
 ): Promise<any> {
+  let callContext: Error
+  if (process.env.DEBUG) {
+    callContext = new Error('Message Call Context')
+  }
   return (args.length === 1
     ? browser.runtime.sendMessage(args[0])
     : browser.tabs.sendMessage(args[0], args[1])
   ).catch(err => {
-    if (process.env.DEV_BUILD) {
-      console.warn(err, ...args)
-    } else if (process.env.NODE_ENV !== 'production') {
-      return Promise.reject(err) as any
+    if (process.env.DEBUG) {
+      console.warn(err.message, ...args, callContext)
     }
   })
 }
@@ -327,6 +334,11 @@ function messageSend<T extends MsgType>(
 async function messageSendSelf<T extends MsgType, R = undefined>(
   message: Message<T>
 ): Promise<R extends undefined ? MessageResponse<T> : R> {
+  let callContext: Error
+  if (process.env.DEBUG) {
+    callContext = new Error('Message Call Context')
+  }
+
   if (window.pageId === undefined) {
     await initClient()
   }
@@ -338,10 +350,8 @@ async function messageSendSelf<T extends MsgType, R = undefined>(
       })
     )
     .catch(err => {
-      if (process.env.DEV_BUILD) {
-        console.warn(err, message)
-      } else if (process.env.NODE_ENV !== 'production') {
-        return Promise.reject(err) as any
+      if (process.env.DEBUG) {
+        console.warn(err.message, message, callContext)
       }
     })
 }

@@ -28,8 +28,6 @@ import {
 import { SearchBox, SearchBoxProps } from './SearchBox'
 import { Profiles, ProfilesProps } from './Profiles'
 
-const ProfilesMemo = React.memo(Profiles)
-
 export interface MenuBarProps {
   text: string
   updateText: SearchBoxProps['onInput']
@@ -46,11 +44,15 @@ export interface MenuBarProps {
   historyIndex: number
   updateHistoryIndex: (index: number) => any
 
+  onSelectProfile: (id: string) => void
   profiles: ProfilesProps['profiles']
   activeProfileId: ProfilesProps['activeProfileId']
 
   isPinned: boolean
   togglePin: () => any
+
+  isQSFocus: boolean
+  toggleQSFocus: () => any
 
   onClose: () => any
   onSwitchSidebar: (side: 'left' | 'right') => any
@@ -116,16 +118,12 @@ export const MenuBar: FC<MenuBarProps> = props => {
           onTouchStart={props.onDragAreaTouchStart}
         />
       )}
-      <ProfilesMemo
+      <Profiles
         t={t}
         profiles={props.profiles}
         activeProfileId={props.activeProfileId}
+        onSelectProfile={props.onSelectProfile}
         onHeightChanged={updateProfileHeight}
-        onProfileChanged={() => {
-          setTimeout(() => {
-            props.searchText(props.text)
-          }, 500)
-        }}
       />
       <FavBtn
         t={t}
@@ -159,8 +157,8 @@ export const MenuBar: FC<MenuBarProps> = props => {
         <>
           <FocusBtn
             t={t}
-            isPinned={props.isPinned}
-            onClick={props.togglePin}
+            isFocus={props.isQSFocus}
+            onClick={props.toggleQSFocus}
             disabled={isOptionsPage() || isPopupPage()}
           />
           <SidebarBtn

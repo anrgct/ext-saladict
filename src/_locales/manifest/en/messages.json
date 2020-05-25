@@ -31,5 +31,29 @@
   },
   "command_search_clipboard": {
     "message": "Search clipboard content in Standalone Panel"
+  },
+  "command_next_profile": {
+    "message": "Next Profile"
+  },
+  "command_prev_profile": {
+    "message": "Previous Profile"
+  },
+  "command_profile_1": {
+    "message": "First Profile"
+  },
+  "command_profile_2": {
+    "message": "Second Profile"
+  },
+  "command_profile_3": {
+    "message": "Third Profile"
+  },
+  "command_profile_4": {
+    "message": "Fourth Profile"
+  },
+  "command_profile_5": {
+    "message": "Fifth Profile"
+  },
+  "command_add_notebook": {
+    "message": "Add to Notebook"
   }
 }

@@ -12,13 +12,15 @@ import google from '@/components/dictionaries/google/config'
 import googledict from '@/components/dictionaries/googledict/config'
 import guoyu from '@/components/dictionaries/guoyu/config'
 import hjdict from '@/components/dictionaries/hjdict/config'
+import jikipedia from '@/components/dictionaries/jikipedia/config'
 import jukuu from '@/components/dictionaries/jukuu/config'
+import lexico from '@/components/dictionaries/lexico/config'
 import liangan from '@/components/dictionaries/liangan/config'
 import longman from '@/components/dictionaries/longman/config'
 import macmillan from '@/components/dictionaries/macmillan/config'
 import mojidict from '@/components/dictionaries/mojidict/config'
 import naver from '@/components/dictionaries/naver/config'
-import oald from '@/components/dictionaries/oald/config'
+import renren from '@/components/dictionaries/renren/config'
 import shanbay from '@/components/dictionaries/shanbay/config'
 import sogou from '@/components/dictionaries/sogou/config'
 import tencent from '@/components/dictionaries/tencent/config'
@@ -32,43 +34,48 @@ import youdao from '@/components/dictionaries/youdao/config'
 import youdaotrans from '@/components/dictionaries/youdaotrans/config'
 import zdic from '@/components/dictionaries/zdic/config'
 
-export function getAllDicts() {
-  // For TypeScript to generate typings
-  // Follow alphabetical order for easy reading
-  return {
-    baidu: baidu(),
-    bing: bing(),
-    caiyun: caiyun(),
-    cambridge: cambridge(),
-    cnki: cnki(),
-    cobuild: cobuild(),
-    etymonline: etymonline(),
-    eudic: eudic(),
-    google: google(),
-    googledict: googledict(),
-    guoyu: guoyu(),
-    hjdict: hjdict(),
-    jukuu: jukuu(),
-    liangan: liangan(),
-    longman: longman(),
-    macmillan: macmillan(),
-    mojidict: mojidict(),
-    naver: naver(),
-    oald: oald(),
-    shanbay: shanbay(),
-    sogou: sogou(),
-    tencent: tencent(),
-    urban: urban(),
-    vocabulary: vocabulary(),
-    weblio: weblio(),
-    weblioejje: weblioejje(),
-    websterlearner: websterlearner(),
-    wikipedia: wikipedia(),
-    youdao: youdao(),
-    youdaotrans: youdaotrans(),
-    zdic: zdic()
-  }
+// For TypeScript to generate typings
+// Follow alphabetical order for easy reading
+export const defaultAllDicts = {
+  baidu: baidu(),
+  bing: bing(),
+  caiyun: caiyun(),
+  cambridge: cambridge(),
+  cnki: cnki(),
+  cobuild: cobuild(),
+  etymonline: etymonline(),
+  eudic: eudic(),
+  google: google(),
+  googledict: googledict(),
+  guoyu: guoyu(),
+  hjdict: hjdict(),
+  jikipedia: jikipedia(),
+  jukuu: jukuu(),
+  lexico: lexico(),
+  liangan: liangan(),
+  longman: longman(),
+  macmillan: macmillan(),
+  mojidict: mojidict(),
+  naver: naver(),
+  renren: renren(),
+  shanbay: shanbay(),
+  sogou: sogou(),
+  tencent: tencent(),
+  urban: urban(),
+  vocabulary: vocabulary(),
+  weblio: weblio(),
+  weblioejje: weblioejje(),
+  websterlearner: websterlearner(),
+  wikipedia: wikipedia(),
+  youdao: youdao(),
+  youdaotrans: youdaotrans(),
+  zdic: zdic()
 }
+
+export type AllDicts = typeof defaultAllDicts
+
+export const getAllDicts = (): AllDicts =>
+  JSON.parse(JSON.stringify(defaultAllDicts))
 
 interface DictItemBase {
   /**
@@ -123,10 +130,10 @@ export type DictItem<
   ? DictItemWithOptions
   : DictItemWithOptions<Options> &
       ((Key extends any
-        ? Options[Key] extends string
-          ? Key
-          : never
-        : never) extends never
+      ? Options[Key] extends string
+        ? Key
+        : never
+      : never) extends never
         ? {}
         : {
             options_sel: {

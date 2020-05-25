@@ -1,18 +1,20 @@
-import { createStore, applyMiddleware, compose } from 'redux'
+import {
+  createStore as createReduxStore,
+  applyMiddleware,
+  compose
+} from 'redux'
 import thunkMiddleware from 'redux-thunk'
 import { createEpicMiddleware } from 'redux-observable'
 import { Observable } from 'rxjs'
 import { map, distinctUntilChanged } from 'rxjs/operators'
 
-import get from 'lodash/get'
-
 import { message } from '@/_helpers/browser-api'
 import { getConfig } from '@/_helpers/config-manager'
 import { getActiveProfile } from '@/_helpers/profile-manager'
 
-import { createRootReducer, StoreState, StoreAction } from './modules'
-import { init } from './modules/init'
-import { epics } from './modules/epics'
+import { rootReducer, StoreState, StoreAction } from './modules'
+import { init } from './init'
+import { epics } from './epics'
 
 const epicMiddleware = createEpicMiddleware<
   StoreAction,
@@ -20,12 +22,12 @@ const epicMiddleware = createEpicMiddleware<
   StoreState
 >()
 
-export default () => {
+export const createStore = () => {
   const composeEnhancers: typeof compose =
     window['__REDUX_DEVTOOLS_EXTENSION_COMPOSE__'] || compose
 
-  const store = createStore(
-    createRootReducer(),
+  const store = createReduxStore(
+    rootReducer,
     composeEnhancers(applyMiddleware(thunkMiddleware, epicMiddleware))
   )
 
@@ -54,16 +56,14 @@ export default () => {
       })
     })
 
-  message.addListener('QUERY_PANEL_STATE', queryStoreState)
-  message.self.addListener('QUERY_PANEL_STATE', queryStoreState)
+  message.addListener('QUERY_PIN_STATE', queryStoreState)
+  message.self.addListener('QUERY_PIN_STATE', queryStoreState)
 
-  function queryStoreState({ payload: path }: { payload?: string }) {
-    return Promise.resolve(
-      path && typeof path === 'string'
-        ? get(store.getState(), path)
-        : store.getState()
-    )
+  async function queryStoreState() {
+    return store.getState().isPinned
   }
 
   return store
 }
+
+export default createStore

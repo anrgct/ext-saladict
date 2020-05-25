@@ -101,6 +101,8 @@ export type MessageConfig = MessageConfigType<{
     payload: {
       area: DBArea
       word: Word
+      /** From sync services */
+      fromSync?: boolean
     }
   }
 
@@ -126,9 +128,9 @@ export type MessageConfig = MessageConfigType<{
       area: DBArea
       itemsPerPage?: number
       pageNum?: number
-      filters?: { [field: string]: string[] | undefined }
-      sortField?: string
-      sortOrder?: 'ascend' | 'descend' | false
+      filters?: { [field: string]: (string | number)[] | null | undefined }
+      sortField?: string | number | (string | number)[]
+      sortOrder?: 'ascend' | 'descend' | false | null
       searchText?: string
     }
     response: {
@@ -161,6 +163,7 @@ export type MessageConfig = MessageConfigType<{
       mouseX: number
       mouseY: number
       dbClick: boolean
+      altKey: boolean
       shiftKey: boolean
       ctrlKey: boolean
       metaKey: boolean
@@ -171,6 +174,16 @@ export type MessageConfig = MessageConfigType<{
       /** force panel to skip reconciling position */
       force: boolean
     }
+  }
+
+  /** From backend to active panel */
+  ADD_NOTEBOOK: {
+    payload: {
+      /** to browser action page */
+      popup: boolean
+    }
+    /** is received */
+    response?: boolean
   }
 
   /** send to the current active tab for selection */
@@ -195,17 +208,24 @@ export type MessageConfig = MessageConfigType<{
     payload: boolean
   }
 
-  /** Other pages or frames query for panel state */
-  QUERY_PANEL_STATE: {
-    /** object path, default returns the whole state */
-    payload?: string
-    response?: any
+  /** From other pages or frames query for active panel pin state */
+  QUERY_PIN_STATE: {
+    response: boolean
   }
 
   /** request searching */
   SEARCH_TEXT: {
     payload: Word
   }
+
+  /** request searching text box text from other pages */
+  SEARCH_TEXT_BOX: {
+    /** is popup received */
+    response?: boolean
+  }
+
+  /** request closing panel */
+  CLOSE_PANEL: {}
 
   TEMP_DISABLED_STATE: {
     payload:

@@ -3,15 +3,14 @@ import {
   MachineTranslateResult,
   SearchFunction,
   GetSrcPageFunction,
-  getMachineTranslateTl
+  getMTArgs
 } from '../helpers'
+import memoizeOne from 'memoize-one'
 import { Sogou } from '@opentranslate/sogou'
 import { SogouLanguage } from './config'
 
-let _translator: Sogou | undefined
-const getTranslator = () =>
-  (_translator =
-    _translator ||
+export const getTranslator = memoizeOne(
+  () =>
     new Sogou({
       env: 'ext',
       config:
@@ -21,7 +20,8 @@ const getTranslator = () =>
               key: process.env.SOGOU_KEY
             }
           : undefined
-    }))
+    })
+)
 
 export const getSrcPage: GetSrcPageFunction = (text, config, profile) => {
   const lang =
@@ -41,21 +41,23 @@ export type SogouResult = MachineTranslateResult<'sogou'>
 export const search: SearchFunction<
   SogouResult,
   MachineTranslatePayload<SogouLanguage>
-> = async (text, config, profile, payload) => {
-  const options = profile.dicts.all.sogou.options
-
+> = async (rawText, config, profile, payload) => {
   const translator = getTranslator()
 
-  const sl = payload.sl || (await translator.detect(text))
-  const tl =
-    payload.tl || getMachineTranslateTl(sl, profile.dicts.all.sogou, config)
+  const { sl, tl, text } = await getMTArgs(
+    translator,
+    rawText,
+    profile.dicts.all.sogou,
+    config,
+    payload
+  )
 
-  if (payload.isPDF && !options.pdfNewline) {
-    text = text.replace(/\n+/g, ' ')
-  }
+  const pid = config.dictAuth.sogou.pid
+  const key = config.dictAuth.sogou.key
+  const translatorConfig = pid && key ? { pid, key } : undefined
 
   try {
-    const result = await translator.translate(text, sl, tl)
+    const result = await translator.translate(text, sl, tl, translatorConfig)
     return {
       result: {
         id: 'sogou',
@@ -66,6 +68,7 @@ export const search: SearchFunction<
         trans: result.trans
       },
       audio: {
+        py: result.trans.tts,
         us: result.trans.tts
       }
     }

@@ -1,4 +1,5 @@
 import React, { FC, useRef, useState, useEffect } from 'react'
+import classNames from 'classnames'
 import CSSTransition from 'react-transition-group/CSSTransition'
 import AutosizeTextarea from 'react-textarea-autosize'
 import { useObservableState } from 'observable-hooks'
@@ -7,7 +8,6 @@ import { timer, Observable } from 'rxjs'
 
 export interface MtaBoxProps {
   expand: boolean
-  maxHeight: number
   text: string
   shouldFocus: boolean
   searchText: (text: string) => any
@@ -60,11 +60,8 @@ export const MtaBox: FC<MtaBoxProps> = props => {
   return (
     <div>
       <div
-        className={`mtaBox-TextArea-Wrap${isTyping ? ' isTyping' : ''}`}
-        style={{
-          height: props.expand ? height : 0,
-          maxHeight: props.maxHeight
-        }}
+        className={classNames('mtaBox-TextArea-Wrap', { isTyping })}
+        style={{ height: props.expand ? height : 0 }}
       >
         <CSSTransition
           in={props.expand}
@@ -79,7 +76,6 @@ export const MtaBox: FC<MtaBoxProps> = props => {
               autoFocus
               inputRef={textareaRef}
               className="mtaBox-TextArea"
-              style={{ maxHeight: props.maxHeight }}
               value={props.text}
               onChange={e => {
                 isTypedRef.current = true
@@ -106,7 +102,9 @@ export const MtaBox: FC<MtaBoxProps> = props => {
           width="10"
           height="10"
           viewBox="0 0 59.414 59.414"
-          className={`mtaBox-DrawerBtn_Arrow${props.expand ? ' isExpand' : ''}`}
+          className={classNames('mtaBox-DrawerBtn_Arrow', {
+            isExpand: props.expand
+          })}
         >
           <path d="M58 14.146L29.707 42.44 1.414 14.145 0 15.56 29.707 45.27 59.414 15.56" />
         </svg>
@@ -121,10 +119,7 @@ function transformTyping(event$: Observable<React.KeyboardEvent>) {
   return event$.pipe(
     switchMap(event => {
       event.stopPropagation()
-      return timer(1000).pipe(
-        mapTo(false),
-        startWith(true)
-      )
+      return timer(1000).pipe(mapTo(false), startWith(true))
     })
   )
 }

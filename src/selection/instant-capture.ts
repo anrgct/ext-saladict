@@ -25,17 +25,18 @@ import {
 export function createIntantCaptureStream(config: AppConfig | null) {
   if (!config) return empty()
 
-  const isPinned$ = message.self.createStream('PIN_STATE').pipe(
-    pluck('payload'),
-    startWith(false)
-  )
+  const isPinned$ = message.self
+    .createStream('PIN_STATE')
+    .pipe(pluck('payload'), startWith(false))
 
   const responseToQSPanel$ = merge(
     // When Quick Search Panel show and hide
-    from(message.send<'QUERY_QS_PANEL'>({ type: 'QUERY_QS_PANEL' })),
+    from(
+      message.send<'QUERY_QS_PANEL'>({ type: 'QUERY_QS_PANEL' })
+    ),
     message.createStream('QS_PANEL_CHANGED').pipe(pluck('payload'))
   ).pipe(
-    map(withQSPanel => withQSPanel && config.tripleCtrlPageSel),
+    map(withQssaPanel => withQssaPanel && config.qssaPageSel),
     startWith(false)
   )
 
@@ -60,6 +61,7 @@ export function createIntantCaptureStream(config: AppConfig | null) {
       return merge(
         mapTo(null)(fromEvent(window, 'mouseup', { capture: true })),
         mapTo(null)(fromEvent(window, 'mouseout', { capture: true })),
+        mapTo(null)(fromEvent(window, 'keyup', { capture: true })),
         fromEvent<MouseEvent>(window, 'mousemove', { capture: true }).pipe(
           map(event => {
             const self = isInDictPanel(event.target)
@@ -82,12 +84,33 @@ export function createIntantCaptureStream(config: AppConfig | null) {
           })
         )
       ).pipe(
+        // distinctUntilChanged((oldObj, newObj) =>
+        //   Boolean(
+        //     oldObj &&
+        //       newObj &&
+        //       Math.abs(oldObj.event.clientX - newObj.event.clientX) <= 1 &&
+        //       Math.abs(oldObj.event.clientY - newObj.event.clientY) <= 1
+        //   )
+        // ),
         debounce(obj =>
           obj ? timer(obj.self ? panelInstant.delay : otherInstant.delay) : of()
         )
       )
     }),
     map(obj => obj && { word: getCursorWord(obj.event), ...obj }),
+    distinctUntilChanged((oldObj, newObj) => {
+      if (!oldObj || !newObj) return false
+      const { word: oldWord, event: oldEvent } = oldObj
+      const { word: newWord, event: newEvent } = newObj
+      return (
+        oldWord?.text === newWord?.text &&
+        oldWord?.context === newWord?.context &&
+        oldEvent.shiftKey === newEvent.shiftKey &&
+        oldEvent.ctrlKey === newEvent.ctrlKey &&
+        oldEvent.metaKey === newEvent.metaKey &&
+        oldEvent.altKey === newEvent.altKey
+      )
+    }),
     filter((obj): obj is {
       word: { text: string; context: string }
       event: MouseEvent
@@ -97,11 +120,6 @@ export function createIntantCaptureStream(config: AppConfig | null) {
       Boolean(
         obj && obj.word && checkSupportedLangs(config.language, obj.word.text)
       )
-    ),
-    distinctUntilChanged(
-      (oldObj, newObj) =>
-        oldObj.word.text === newObj.word.text &&
-        oldObj.word.context === newObj.word.context
     )
   )
 }
@@ -120,6 +138,7 @@ function getCursorWord(
   if (!sel) return null
   if (sel.rangeCount > 0) {
     originRange = sel.getRangeAt(0)
+    sel.removeAllRanges()
   }
 
   if (document.caretPositionFromPoint) {

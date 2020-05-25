@@ -73,7 +73,7 @@ export class OptionsMain extends React.Component<
         className="xmain-container"
         style={{ maxWidth: 1400, margin: '0 auto' }}
       >
-        <Header style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <Header className="options-header">
           <h1 style={{ color: '#fff' }}>{t('title')}</h1>
           <span style={{ color: '#fff' }}>
             「 {getProfileName(rawProfileName, t)} 」
@@ -131,6 +131,7 @@ export class OptionsMain extends React.Component<
           </Sider>
           <Layout style={{ padding: '24px', minHeight: innerHeight - 64 }}>
             <Content
+              data-option-content={this.state.selectedKey}
               style={{
                 background: '#fff',
                 padding: 24,

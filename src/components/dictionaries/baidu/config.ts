@@ -4,12 +4,13 @@ import { Subunion } from '@/typings/helpers'
 
 export type BaiduLanguage = Subunion<
   Language,
-  'zh-CN' | 'zh-TW' | 'en' | 'ja' | 'ko' | 'fr' | 'de' | 'es' | 'ru'
+  'zh-CN' | 'zh-TW' | 'en' | 'ja' | 'ko' | 'fr' | 'de' | 'es' | 'ru' | 'nl'
 >
 
 export type BaiduConfig = DictItem<{
-  pdfNewline: boolean
+  keepLF: 'none' | 'all' | 'webpage' | 'pdf'
   tl: 'default' | BaiduLanguage
+  tl2: 'default' | BaiduLanguage
 }>
 
 export default (): BaiduConfig => ({
@@ -42,11 +43,37 @@ export default (): BaiduConfig => ({
     max: 999999999999999
   },
   options: {
-    /** Keep linebreaks on PDF */
-    pdfNewline: false,
-    tl: 'default'
+    keepLF: 'webpage',
+    tl: 'default',
+    tl2: 'default'
   },
   options_sel: {
-    tl: ['default', 'zh-CN', 'zh-TW', 'en', 'ja', 'ko', 'fr', 'de', 'es', 'ru']
+    keepLF: ['none', 'all', 'webpage', 'pdf'],
+    tl: [
+      'default',
+      'zh-CN',
+      'zh-TW',
+      'en',
+      'ja',
+      'ko',
+      'fr',
+      'de',
+      'es',
+      'ru',
+      'nl'
+    ],
+    tl2: [
+      'default',
+      'zh-CN',
+      'zh-TW',
+      'en',
+      'ja',
+      'ko',
+      'fr',
+      'de',
+      'es',
+      'ru',
+      'nl'
+    ]
   }
 })

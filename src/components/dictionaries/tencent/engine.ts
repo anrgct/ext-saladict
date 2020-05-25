@@ -3,15 +3,14 @@ import {
   MachineTranslateResult,
   SearchFunction,
   GetSrcPageFunction,
-  getMachineTranslateTl
+  getMTArgs
 } from '../helpers'
+import memoizeOne from 'memoize-one'
 import { Tencent } from '@opentranslate/tencent'
 import { TencentLanguage } from './config'
 
-let _translator: Tencent | undefined
-const getTranslator = () =>
-  (_translator =
-    _translator ||
+export const getTranslator = memoizeOne(
+  () =>
     new Tencent({
       env: 'ext',
       config:
@@ -21,7 +20,8 @@ const getTranslator = () =>
               secretKey: process.env.TENCENT_SECRETKEY
             }
           : undefined
-    }))
+    })
+)
 
 export const getSrcPage: GetSrcPageFunction = (text, config, profile) => {
   const lang =
@@ -41,21 +41,24 @@ export type TencentResult = MachineTranslateResult<'tencent'>
 export const search: SearchFunction<
   TencentResult,
   MachineTranslatePayload<TencentLanguage>
-> = async (text, config, profile, payload) => {
-  const options = profile.dicts.all.tencent.options
-
+> = async (rawText, config, profile, payload) => {
   const translator = getTranslator()
 
-  const sl = payload.sl || (await translator.detect(text))
-  const tl =
-    payload.tl || getMachineTranslateTl(sl, profile.dicts.all.tencent, config)
+  const { sl, tl, text } = await getMTArgs(
+    translator,
+    rawText,
+    profile.dicts.all.tencent,
+    config,
+    payload
+  )
 
-  if (payload.isPDF && !options.pdfNewline) {
-    text = text.replace(/\n+/g, ' ')
-  }
+  const secretId = config.dictAuth.tencent.secretId
+  const secretKey = config.dictAuth.tencent.secretKey
+  const translatorConfig =
+    secretId && secretKey ? { secretId, secretKey } : undefined
 
   try {
-    const result = await translator.translate(text, sl, tl)
+    const result = await translator.translate(text, sl, tl, translatorConfig)
     return {
       result: {
         id: 'tencent',
@@ -66,6 +69,7 @@ export const search: SearchFunction<
         trans: result.trans
       },
       audio: {
+        py: result.trans.tts,
         us: result.trans.tts
       }
     }

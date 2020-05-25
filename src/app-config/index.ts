@@ -1,8 +1,9 @@
 import { DeepReadonly } from '@/typings/helpers'
+import { SupportedLangs } from '@/_helpers/lang-check'
 import { getAllDicts } from './dicts'
 import { getAllContextMenus } from './context-menus'
 import { MtaAutoUnfold as _MtaAutoUnfold } from './profiles'
-import { SupportedLangs } from '@/_helpers/lang-check'
+import { getDefaultDictAuths } from './auth'
 
 export type LangCode = 'zh-CN' | 'zh-TW' | 'en'
 
@@ -44,7 +45,7 @@ export default getDefaultConfig
 
 function _getDefaultConfig() {
   return {
-    version: 12,
+    version: 13,
 
     /** activate app, won't affect triple-ctrl setting */
     active: true,
@@ -84,6 +85,11 @@ function _getDefaultConfig() {
 
     /** sniff pdf request */
     pdfSniff: false,
+    /**
+     * Open PDF viewer in standalone panel.
+     * 'manual': do not redirect on web requests
+     */
+    pdfStandalone: '' as '' | 'always' | 'manual',
     /** URLs, [regexp.source, match_pattern] */
     pdfWhitelist: [] as [string, string][],
     /** URLs, [regexp.source, match_pattern] */
@@ -97,9 +103,9 @@ function _getDefaultConfig() {
     ] as [string, string][],
 
     /** track search history */
-    searhHistory: false,
+    searchHistory: false,
     /** incognito mode */
-    searhHistoryInco: false,
+    searchHistoryInco: false,
 
     /** open word editor when adding a word to notebook */
     editOnFav: true,
@@ -120,6 +126,7 @@ function _getDefaultConfig() {
       double: false,
       /** holding a key */
       holding: {
+        alt: false,
         shift: false,
         ctrl: false,
         meta: false
@@ -140,6 +147,7 @@ function _getDefaultConfig() {
       double: false,
       /** holding a key */
       holding: {
+        alt: false,
         shift: false,
         ctrl: false,
         meta: false
@@ -160,6 +168,7 @@ function _getDefaultConfig() {
       double: false,
       /** holding a key */
       holding: {
+        alt: false,
         shift: false,
         ctrl: false,
         meta: false
@@ -180,6 +189,7 @@ function _getDefaultConfig() {
       double: false,
       /** holding a key */
       holding: {
+        alt: false,
         shift: false,
         ctrl: true,
         meta: false
@@ -198,29 +208,35 @@ function _getDefaultConfig() {
     /** double click delay, in ms */
     doubleClickDelay: 450,
 
-    /** show panel when triple press ctrl */
+    /** show quick search panel when triple press ctrl */
     tripleCtrl: true,
 
-    /** preload source */
-    tripleCtrlPreload: 'clipboard' as PreloadSource,
+    /** preload content on quick search panel */
+    qsPreload: 'clipboard' as PreloadSource,
 
-    /** auto search when triple hit ctrl */
-    tripleCtrlAuto: false,
+    /** auto search when quick search panel opens */
+    qsAuto: false,
 
     /** where should the dict appears */
-    tripleCtrlLocation: 'CENTER' as TCDirection,
+    qsLocation: 'CENTER' as TCDirection,
+
+    /** focus quick search panel when shows up */
+    qsFocus: true,
 
     /** should panel be in a standalone window */
-    tripleCtrlStandalone: true,
+    qsStandalone: true,
 
     /** standalone panel height */
-    tripleCtrlHeight: 600,
+    qssaHeight: 600,
 
     /** resize main widnow to leave space to standalone window */
-    tripleCtrlSidebar: '' as '' | 'left' | 'right',
+    qssaSidebar: '' as '' | 'left' | 'right',
 
     /** should standalone panel response to page selection */
-    tripleCtrlPageSel: true,
+    qssaPageSel: true,
+
+    /** should standalone panel memo position and dimension on close */
+    qssaRectMemo: true,
 
     /** browser action panel preload source */
     baPreload: 'clipboard' as PreloadSource,
@@ -276,7 +292,7 @@ function _getDefaultConfig() {
           'eudic',
           'longman',
           'macmillan',
-          'oald',
+          'lexico',
           'urban',
           'websterlearner',
           'youdao'
@@ -297,7 +313,8 @@ function _getDefaultConfig() {
     // tslint:disable-next-line: no-unnecessary-type-assertion
     blacklist: [
       ['^https://stackedit\\.io(/.*)?$', 'https://stackedit.io/*'],
-      ['^https://docs\\.google\\.com(/.*)?$', 'https://docs.google.com/*']
+      ['^https://docs\\.google\\.com(/.*)?$', 'https://docs.google.com/*'],
+      ['^https://docs\\.qq\\.com(/.*)?$', 'https://docs.qq.com/*']
     ] as [string, string][],
 
     contextMenus: {
@@ -305,10 +322,13 @@ function _getDefaultConfig() {
         'view_as_pdf',
         'google_translate',
         'google_search',
-        'google_page_translate',
-        'youdao_page_translate'
+        'saladict'
       ],
       all: getAllContextMenus()
-    }
+    },
+
+    /** Open settings on first switching "translation" profile */
+    showedDictAuth: false,
+    dictAuth: getDefaultDictAuths()
   }
 }

@@ -1,4 +1,5 @@
 import React, { ComponentType, FC, useMemo, Suspense } from 'react'
+import classNames from 'classnames'
 import root from 'react-shadow'
 import { DictID } from '@/app-config'
 import { Word } from '@/_helpers/record-manager'
@@ -12,7 +13,6 @@ const dictContentStyles = require('./DictItemContent.shadow.scss').toString()
 export interface DictItemBodyProps {
   dictID: DictID
 
-  fontSize: number
   withAnimation: boolean
 
   panelCSS: string
@@ -35,26 +35,29 @@ export const DictItemBody: FC<DictItemBodyProps> = props => {
   const Dict = useMemo(
     () =>
       React.lazy<ComponentType<ViewPorps<any>>>(() =>
-        // due to browser extension limitation
-        // jsonp needs a little hack to work
-        // disable dynamic chunks for now
         import(
           /* webpackInclude: /View\.tsx$/ */
-          /* webpackChunkName: "dicts/[request]" */
-          /* webpackMode: "eager" */
-          /* webpackPrefetch: true */
-          /* webpackPreload: true */
+          /* webpackMode: "lazy" */
           `@/components/dictionaries/${props.dictID}/View.tsx`
         )
       ),
     [props.dictID]
   )
 
-  const dictStyles = useMemo(
+  const DictStyle = useMemo(
     () =>
-      require('@/components/dictionaries/' +
-        props.dictID +
-        '/_style.shadow.scss').toString(),
+      React.lazy(async () => {
+        const styleModule = await import(
+          /* webpackInclude: /_style\.shadow\.scss$/ */
+          /* webpackMode: "lazy" */
+          `@/components/dictionaries/${props.dictID}/_style.shadow.scss`
+        )
+        return {
+          default: () => (
+            <style>{(styleModule.default || styleModule).toString()}</style>
+          )
+        }
+      }),
     [props.dictID]
   )
 
@@ -64,21 +67,15 @@ export const DictItemBody: FC<DictItemBodyProps> = props => {
         {props.searchStatus === 'FINISH' && props.searchResult && (
           <root.div>
             <style>{dictContentStyles}</style>
-            <style>{dictStyles}</style>
-            <style>
-              {`.dictRoot {
-                  font-size: ${props.fontSize}px;
-                  -webkit-font-smoothing: antialiased;
-                  text-rendering: optimizelegibility;
-                  font-family: "Helvetica Neue", Helvetica, Arial, "Hiragino Sans GB", "Hiragino Sans GB W3", "Microsoft YaHei UI", "Microsoft YaHei", sans-serif;
-                }`}
-            </style>
+            <DictStyle />
             {props.panelCSS ? <style>{props.panelCSS}</style> : null}
             <StaticSpeakerContainer
-              className={
-                `d-${props.dictID} dictRoot ${SALADICT_PANEL}` +
-                (props.withAnimation ? ' isAnimate' : '')
-              }
+              className={classNames(
+                `d-${props.dictID}`,
+                'dictRoot',
+                SALADICT_PANEL,
+                { isAnimate: props.withAnimation }
+              )}
               onPlayStart={props.onSpeakerPlay}
               onMouseUp={props.onInPanelSelect}
             >

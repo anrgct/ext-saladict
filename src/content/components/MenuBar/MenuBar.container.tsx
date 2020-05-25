@@ -1,40 +1,66 @@
 import { connect } from 'react-redux'
-import { MenuBar, MenuBarProps } from './MenuBar'
-import { StoreState, StoreAction } from '@/content/redux/modules'
-import { Dispatch } from 'redux'
-import { isStandalonePage } from '@/_helpers/saladict'
+import {
+  ExtractDispatchers,
+  MapStateToProps,
+  MapDispatchToPropsFunction
+} from 'react-retux'
+import { StoreState, StoreDispatch } from '@/content/redux/modules'
+import { updateActiveProfileID } from '@/_helpers/profile-manager'
+import {
+  isStandalonePage,
+  isPopupPage,
+  isQuickSearchPage
+} from '@/_helpers/saladict'
 import { newWord } from '@/_helpers/record-manager'
 import { message } from '@/_helpers/browser-api'
+import { MenuBar, MenuBarProps } from './MenuBar'
+import { updateConfig } from '@/_helpers/config-manager'
+import { timer } from '@/_helpers/promise-more'
+import { objectKeys } from '@/typings/helpers'
 
-type Dispatchers =
+type Dispatchers = ExtractDispatchers<
+  MenuBarProps,
   | 'searchText'
   | 'updateText'
   | 'addToNoteBook'
   | 'updateHistoryIndex'
   | 'togglePin'
+  | 'toggleQSFocus'
   | 'onClose'
   | 'onSwitchSidebar'
+  | 'onSelectProfile'
   | 'onDragAreaMouseDown'
   | 'onDragAreaTouchStart'
   | 'onHeightChanged'
+>
 
-const mapStateToProps = (
-  state: StoreState
-): Omit<MenuBarProps, Dispatchers> => ({
+const mapStateToProps: MapStateToProps<
+  StoreState,
+  MenuBarProps,
+  Dispatchers
+> = state => ({
   text: state.text,
   isInNotebook: state.isFav,
-  shouldFocus: !state.isExpandMtaBox && (state.isQSPanel || isStandalonePage()),
+  shouldFocus:
+    !state.isExpandMtaBox && // multiline search box must be folded
+    (((state.isQSPanel || isQuickSearchPage()) && // is quick search panel
+      state.config.qsFocus) ||
+      isPopupPage()), // or popup page
   enableSuggest: state.config.searchSuggests,
   histories: state.searchHistory,
   historyIndex: state.historyIndex,
+  showedDictAuth: state.config.showedDictAuth,
   profiles: state.profiles,
   activeProfileId: state.activeProfile.id,
-  isPinned: state.isPinned
+  isPinned: state.isPinned,
+  isQSFocus: state.isQSFocus
 })
 
-const mapDispatchToProps = (
-  dispatch: Dispatch<StoreAction>
-): Pick<MenuBarProps, Dispatchers> => ({
+const mapDispatchToProps: MapDispatchToPropsFunction<
+  StoreDispatch,
+  MenuBarProps,
+  Dispatchers
+> = dispatch => ({
   searchText: text => {
     dispatch({
       type: 'SEARCH_START',
@@ -59,6 +85,9 @@ const mapDispatchToProps = (
   },
   togglePin: () => {
     dispatch({ type: 'TOGGLE_PIN' })
+  },
+  toggleQSFocus: () => {
+    dispatch({ type: 'TOGGLE_QS_FOCUS' })
   },
   onClose: () => {
     if (isStandalonePage()) {
@@ -96,6 +125,51 @@ const mapDispatchToProps = (
         x: event.changedTouches[0].clientX,
         y: event.changedTouches[0].clientY
       }
+    })
+  },
+  onSelectProfile: id => {
+    dispatch(async (dispatch, getState) => {
+      const state = getState()
+      const { showedDictAuth, dictAuth } = state.config
+
+      // no jumping on popup page which breaks user flow
+      if (!showedDictAuth && !isPopupPage()) {
+        await updateConfig({
+          ...state.config,
+          showedDictAuth: true
+        })
+
+        if (
+          objectKeys(dictAuth).every(id =>
+            objectKeys(dictAuth[id]).every(k => !dictAuth[id]?.[k])
+          )
+        ) {
+          message.send({
+            type: 'OPEN_URL',
+            payload: {
+              url: 'options.html?menuselected=DictAuths',
+              self: true
+            }
+          })
+          return
+        }
+      }
+
+      await updateActiveProfileID(id)
+      await timer(10)
+      dispatch({
+        type: 'SEARCH_START',
+        payload: {
+          word:
+            state.searchHistory[state.historyIndex]?.text === state.text
+              ? state.searchHistory[state.historyIndex]
+              : newWord({
+                  text: state.text,
+                  title: 'Saladict',
+                  favicon: 'https://saladict.crimx.com/favicon.ico'
+                })
+        }
+      })
     })
   }
 })

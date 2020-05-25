@@ -1,29 +1,37 @@
 import { connect } from 'react-redux'
-import { MtaBox, MtaBoxProps } from './MtaBox'
+import {
+  ExtractDispatchers,
+  MapStateToProps,
+  MapDispatchToProps
+} from 'react-retux'
 import { StoreState, StoreAction } from '@/content/redux/modules'
-import { Dispatch } from 'redux'
 import { newWord } from '@/_helpers/record-manager'
-import { isStandalonePage } from '@/_helpers/saladict'
+import { isQuickSearchPage, isPopupPage } from '@/_helpers/saladict'
+import { MtaBox, MtaBoxProps } from './MtaBox'
 
-type Dispatchers =
-  | 'searchText'
-  | 'onInput'
-  | 'onDrawerToggle'
-  | 'onHeightChanged'
+type Dispatchers = ExtractDispatchers<
+  MtaBoxProps,
+  'searchText' | 'onInput' | 'onDrawerToggle' | 'onHeightChanged'
+>
 
-const mapStateToProps = (
-  state: StoreState
-): Omit<MtaBoxProps, Dispatchers> => ({
+const mapStateToProps: MapStateToProps<
+  StoreState,
+  MtaBoxProps,
+  Dispatchers
+> = state => ({
   expand: state.isExpandMtaBox,
-  maxHeight: state.panelMaxHeight,
   text: state.text,
   shouldFocus:
-    !state.activeProfile.mtaAutoUnfold || state.isQSPanel || isStandalonePage()
+    !state.activeProfile.mtaAutoUnfold ||
+    ((state.isQSPanel || isQuickSearchPage()) && state.config.qsFocus) ||
+    isPopupPage()
 })
 
-const mapDispatchToProps = (
-  dispatch: Dispatch<StoreAction>
-): Pick<MtaBoxProps, Dispatchers> => ({
+const mapDispatchToProps: MapDispatchToProps<
+  StoreAction,
+  MtaBoxProps,
+  Dispatchers
+> = dispatch => ({
   searchText: text => {
     dispatch({ type: 'SEARCH_START', payload: { word: newWord({ text }) } })
   },

@@ -1,4 +1,4 @@
-/**!
+/** !
  * Upgrade PDF.js
  */
 
@@ -11,7 +11,8 @@ if (!shell.which('git')) {
   shell.exit(1)
 }
 
-const repoRoot = 'pdf'
+const cacheDir = 'pdf'
+const repoRoot = 'pdf/es5'
 const publicPDFRoot = path.join(__dirname, '../assets/pdf')
 const pdfFiles = [
   'build/pdf.js',
@@ -26,14 +27,14 @@ const files = [...pdfFiles, ...pdfDirs]
 
 shell.cd(path.resolve(__dirname))
 
-shell.rm('-rf', repoRoot)
+shell.rm('-rf', cacheDir)
 
 exec(
-  `git clone https://github.com/mozilla/pdf.js.git ${repoRoot} --single-branch --branch gh-pages --depth 1 --progress --verbose`,
+  `git clone https://github.com/mozilla/pdf.js.git ${cacheDir} --single-branch --branch gh-pages --depth 1 --progress --verbose`,
   'Error: Git clone failed'
 )
 
-shell.cd('./' + repoRoot)
+shell.cd('./' + cacheDir)
 
 startUpgrade()
 
@@ -42,7 +43,7 @@ async function startUpgrade() {
   await Promise.all(files.map(p => exists(path.join(__dirname, repoRoot, p))))
 
   shell.echo('\nModifying files.')
-  await Promise.all([modifyViewrJS(), modifyViewerHTML()])
+  await Promise.all([modifyPDFJS(), modifyPDFWorker(), modifyViewrJS(), modifyViewerHTML()])
 
   await fs.ensureDir(publicPDFRoot)
 
@@ -53,9 +54,27 @@ async function startUpgrade() {
 
   shell.echo('\nCleaning files.')
   shell.cd(path.resolve(__dirname))
-  shell.rm('-rf', repoRoot)
+  shell.rm('-rf', cacheDir)
 
   shell.echo('\ndone.')
+}
+
+async function modifyPDFJS() {
+  const pdfPath = path.join(__dirname, repoRoot, 'build/pdf.js')
+  let file = await fs.readFile(pdfPath, 'utf8')
+
+  file = removeRegeneratorPolyfill('pdf.js', file)
+
+  await fs.writeFile(pdfPath, file)
+}
+
+async function modifyPDFWorker() {
+  const workerPath = path.join(__dirname, repoRoot, 'build/pdf.worker.js')
+  let file = await fs.readFile(workerPath, 'utf8')
+
+  file = removeRegeneratorPolyfill('pdf.worker.js', file)
+
+  await fs.writeFile(workerPath, file)
 }
 
 async function modifyViewrJS() {
@@ -75,17 +94,28 @@ async function modifyViewrJS() {
   )
 
   // disable url check
-  const validateTester = /var validateFileURL[^\n]*\n+^{$[\s\S]+?^}$/m
+  const validateTester = /(let|var) validateFileURL[^\n]*\n+^{$[\s\S]+?^}$/m
   if (!validateTester.test(file)) {
     shell.echo('Could not locate validateFileURL in viewer.js')
     shell.exit(1)
   }
   file = file.replace(
     validateTester,
-    '/* saladict */var validateFileURL = () => {};'
+    '/* saladict */let validateFileURL = () => {};'
   )
 
+  file = removeRegeneratorPolyfill('viewer.js', file)
+
   await fs.writeFile(viewerPath, file)
+}
+
+function removeRegeneratorPolyfill(name, file) {
+  // remove regenerator polyfill which triggers 'unsafe-eval' CSP
+  const regeneratorTester = /(^| )Function\("r"/
+  if (!regeneratorTester.test(file)) {
+    shell.echo(`Could not locate regenerator polyfill in ${name}`)
+  }
+  return file.replace(regeneratorTester, '/* saladict */ // Function("r"')
 }
 
 async function modifyViewerHTML() {
@@ -161,9 +191,9 @@ async function cloneFiles() {
     path.join(publicPDFRoot, 'web/locale/locale.properties')
   )
 
-  const locales = (await fs.readdir(
-    path.join(__dirname, repoRoot, 'web/locale')
-  )).filter(
+  const locales = (
+    await fs.readdir(path.join(__dirname, repoRoot, 'web/locale'))
+  ).filter(
     name =>
       name.startsWith('en') ||
       name.startsWith('zh') ||

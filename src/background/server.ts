@@ -6,7 +6,6 @@ import { newWord } from '@/_helpers/record-manager'
 import { Message, MessageResponse } from '@/typings/message'
 import {
   SearchFunction,
-  GetSrcPageFunction,
   DictSearchResult
 } from '@/components/dictionaries/helpers'
 import {
@@ -25,6 +24,7 @@ import { AudioManager } from './audio-manager'
 import { QsPanelManager } from './windows-manager'
 import { getTextFromClipboard } from './clipboard-manager'
 import './types'
+import { DictID } from '@/app-config'
 
 /**
  * background script as transfer station
@@ -40,6 +40,14 @@ export class BackgroundServer {
   }
 
   static init = BackgroundServer.getInstance
+
+  static getDictEngine(id: DictID) {
+    return import(
+      /* webpackInclude: /engine\.ts$/ */
+      /* webpackMode: "lazy" */
+      `@/components/dictionaries/${id}/engine.ts`
+    )
+  }
 
   private qsPanelManager: QsPanelManager
 
@@ -118,41 +126,47 @@ export class BackgroundServer {
     const text = getTextFromClipboard()
     if (!text) return
 
-    if (!(await this.qsPanelManager.hasCreated())) {
-      await this.qsPanelManager.create()
-      await timer(1000)
+    const word = newWord({ text })
+
+    if (await this.qsPanelManager.hasCreated()) {
+      await message.send({
+        type: 'QS_PANEL_SEARCH_TEXT',
+        payload: word
+      })
+      return
     }
 
-    await message.send({
-      type: 'QS_PANEL_SEARCH_TEXT',
-      payload: newWord({ text })
-    })
+    await this.qsPanelManager.create(word)
+
+    if (!window.appConfig.qsAuto) {
+      await timer(1000)
+      await message.send({
+        type: 'QS_PANEL_SEARCH_TEXT',
+        payload: word
+      })
+    }
   }
 
   async openSrcPage({
     id,
     text
   }: Message<'OPEN_DICT_SRC_PAGE'>['payload']): Promise<void> {
-    const getSrcPage: GetSrcPageFunction = require('@/components/dictionaries/' +
-      id +
-      '/engine').getSrcPage
-
+    const engine = await BackgroundServer.getDictEngine(id)
     return openURL(
-      await getSrcPage(text, window.appConfig, window.activeProfile)
+      await engine.getSrcPage(text, window.appConfig, window.activeProfile)
     )
   }
 
-  fetchDictResult(
+  async fetchDictResult(
     data: Message<'FETCH_DICT_RESULT'>['payload']
   ): Promise<MessageResponse<'FETCH_DICT_RESULT'>> {
     let search: SearchFunction<
       DictSearchResult<any>,
-      NonNullable<(typeof data)['payload']>
+      NonNullable<typeof data['payload']>
     >
 
     try {
-      search = require('@/components/dictionaries/' + data.id + '/engine')
-        .search
+      ;({ search } = await BackgroundServer.getDictEngine(data.id))
     } catch (err) {
       return Promise.reject(err)
     }
@@ -164,7 +178,7 @@ export class BackgroundServer {
       25000
     )
       .catch(async (err: Error) => {
-        if (process.env.NODE_ENV === 'development') {
+        if (process.env.DEBUG) {
           console.warn(data.id, err)
         }
 
@@ -181,7 +195,7 @@ export class BackgroundServer {
       })
       .then(response => ({ ...response, id: data.id }))
       .catch(err => {
-        if (process.env.NODE_ENV === 'development') {
+        if (process.env.DEBUG) {
           console.warn(data.id, err)
         }
         return { result: null, id: data.id }
@@ -189,9 +203,8 @@ export class BackgroundServer {
   }
 
   async callDictEngineMethod(data: Message<'DICT_ENGINE_METHOD'>['payload']) {
-    return require(`@/components/dictionaries/${data.id}/engine`)[data.method](
-      ...(data.args || [])
-    )
+    const engine = await BackgroundServer.getDictEngine(data.id)
+    return engine[data.method](...(data.args || []))
   }
 
   /** Bypass http restriction */

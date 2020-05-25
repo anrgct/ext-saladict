@@ -3,15 +3,14 @@ import {
   MachineTranslateResult,
   SearchFunction,
   GetSrcPageFunction,
-  getMachineTranslateTl
+  getMTArgs
 } from '../helpers'
+import memoizeOne from 'memoize-one'
 import { Youdao } from '@opentranslate/youdao'
 import { YoudaotransLanguage } from './config'
 
-let _translator: Youdao | undefined
-const getTranslator = () =>
-  (_translator =
-    _translator ||
+export const getTranslator = memoizeOne(
+  () =>
     new Youdao({
       env: 'ext',
       config:
@@ -21,7 +20,8 @@ const getTranslator = () =>
               key: process.env.YOUDAO_KEY
             }
           : undefined
-    }))
+    })
+)
 
 export const getSrcPage: GetSrcPageFunction = (text, config, profile) => {
   return `http://fanyi.youdao.com`
@@ -32,22 +32,23 @@ export type YoudaotransResult = MachineTranslateResult<'youdaotrans'>
 export const search: SearchFunction<
   YoudaotransResult,
   MachineTranslatePayload<YoudaotransLanguage>
-> = async (text, config, profile, payload) => {
-  const options = profile.dicts.all.youdaotrans.options
-
+> = async (rawText, config, profile, payload) => {
   const translator = getTranslator()
 
-  const sl = payload.sl || (await translator.detect(text))
-  const tl =
-    payload.tl ||
-    getMachineTranslateTl(sl, profile.dicts.all.youdaotrans, config)
+  const { sl, tl, text } = await getMTArgs(
+    translator,
+    rawText,
+    profile.dicts.all.youdaotrans,
+    config,
+    payload
+  )
 
-  if (payload.isPDF && !options.pdfNewline) {
-    text = text.replace(/\n+/g, ' ')
-  }
+  const appKey = config.dictAuth.youdaotrans.appKey
+  const key = config.dictAuth.youdaotrans.key
+  const translatorConfig = appKey && key ? { appKey, key } : undefined
 
   try {
-    const result = await translator.translate(text, sl, tl)
+    const result = await translator.translate(text, sl, tl, translatorConfig)
     return {
       result: {
         id: 'youdaotrans',
@@ -58,6 +59,7 @@ export const search: SearchFunction<
         trans: result.trans
       },
       audio: {
+        py: result.trans.tts,
         us: result.trans.tts
       }
     }

@@ -3,12 +3,14 @@ import { storiesOf } from '@storybook/react'
 import { action } from '@storybook/addon-actions'
 import { jsxDecorator } from 'storybook-addon-jsx'
 import { withPropsTable } from 'storybook-addon-react-docgen'
-import { withKnobs, number, boolean } from '@storybook/addon-knobs'
-import { withSaladictPanel } from '@/_helpers/storybook'
+import { withKnobs, number, boolean, object } from '@storybook/addon-knobs'
+import { withSaladictPanel, withi18nNS } from '@/_helpers/storybook'
 import faker from 'faker'
 import { DictList } from './DictList'
 import { getAllDicts } from '@/app-config/dicts'
-import { DictID } from '@/app-config'
+import { getDefaultConfig, DictID } from '@/app-config'
+
+const defaultLanguage = getDefaultConfig().language
 
 const allDicts = getAllDicts()
 const dicts = Object.keys(allDicts).map(id => ({
@@ -37,9 +39,13 @@ storiesOf('Content Scripts|Dict Panel', module)
       height: 'auto'
     })
   )
+  .addDecorator(withi18nNS(['content', 'dicts']))
   .add('DictList', () => (
     <DictList
-      fontSize={number('Font Size', 13)}
+      touchMode={boolean('Touch Mode', false)}
+      language={object('Language', defaultLanguage)}
+      doubleClickDelay={number('Double Click Delay', 200)}
+      newSelection={action('New Selection')}
       withAnimation={boolean('Enable Animation', true)}
       panelCSS={''}
       dicts={[...Array(faker.random.number({ min: 3, max: 10 }))].map(() => ({
@@ -55,6 +61,7 @@ storiesOf('Content Scripts|Dict Panel', module)
       searchText={action('Search Text')}
       openDictSrcPage={action('Open Dict Source Page')}
       onHeightChanged={action('Height Changed')}
+      onUserFold={action('User fold')}
       onSpeakerPlay={async src => action('Speaker Play')(src)}
     />
   ))

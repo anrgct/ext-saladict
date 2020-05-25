@@ -1,9 +1,13 @@
 import { connect } from 'react-redux'
-import { ThunkDispatch } from 'redux-thunk'
-import { DictList, DictListProps } from './DictList'
-import { StoreState, StoreAction } from '@/content/redux/modules'
-import { message } from '@/_helpers/browser-api'
+import {
+  ExtractDispatchers,
+  MapStateToProps,
+  MapDispatchToPropsFunction
+} from 'react-retux'
 import memoizeOne from 'memoize-one'
+import { StoreState, StoreDispatch } from '@/content/redux/modules'
+import { message } from '@/_helpers/browser-api'
+import { DictList, DictListProps } from './DictList'
 
 const memoizedDicts = memoizeOne(
   (
@@ -18,19 +22,23 @@ const memoizedDicts = memoizeOne(
     }))
 )
 
-type Dispatchers =
+type Dispatchers = ExtractDispatchers<
+  DictListProps,
   | 'searchText'
   | 'openDictSrcPage'
   | 'onHeightChanged'
+  | 'onUserFold'
   | 'onSpeakerPlay'
   | 'newSelection'
+>
 
-const mapStateToProps = (
-  state: StoreState
-): Omit<DictListProps, Dispatchers> => {
+const mapStateToProps: MapStateToProps<
+  StoreState,
+  DictListProps,
+  Dispatchers
+> = state => {
   const { config } = state
   return {
-    fontSize: config.fontSize,
     withAnimation: config.animation,
     panelCSS: config.panelCSS,
     touchMode: config.touchMode,
@@ -40,9 +48,11 @@ const mapStateToProps = (
   }
 }
 
-const mapDispatchToProps = (
-  dispatch: ThunkDispatch<StoreState, {}, StoreAction>
-): Pick<DictListProps, Dispatchers> => ({
+const mapDispatchToProps: MapDispatchToPropsFunction<
+  StoreDispatch,
+  DictListProps,
+  Dispatchers
+> = dispatch => ({
   searchText: payload => {
     dispatch({ type: 'SEARCH_START', payload })
   },
@@ -64,6 +74,9 @@ const mapDispatchToProps = (
       type: 'UPDATE_PANEL_HEIGHT',
       payload: { area: 'dictlist', height }
     })
+  },
+  onUserFold: (id, fold) => {
+    dispatch({ type: 'USER_FOLD_DICT', payload: { id, fold } })
   },
   onSpeakerPlay: src => {
     return new Promise(resolve => {

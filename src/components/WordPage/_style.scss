@@ -1,9 +1,17 @@
 body {
   overflow-y: scroll;
+  // Firefox table will always overflow
+  overflow-x: hidden;
 }
 
 textarea {
   resize: none;
+}
+
+.ant-pagination {
+  float: none !important;
+  display: flex;
+  justify-content: center;
 }
 
 .wordpage-Container {
@@ -15,7 +23,7 @@ textarea {
 .wordpage-Header {
   display: flex;
   position: fixed;
-  z-index: 1000;
+  z-index: 100;
   top: 0;
   left: 0;
   width: 100%;
@@ -32,21 +40,32 @@ textarea {
   align-items: center;
   line-height: 1;
   color: #fff;
+}
 
-  h1 {
-    margin-bottom: 5px;
-    color: #fff;
+.wordpage-Title_head {
+  margin-bottom: 5px;
+  color: #fff;
+}
 
-    small {
-      font-size: 0.6em;
-      vertical-align: middle;
-    }
+.wordpage-Title_small {
+  font-size: 0.6em;
+  vertical-align: middle;
+
+  @media screen and (max-width: 720px) {
+    display: none !important;
   }
 }
 
 .wordpage-Wordcount {
   margin-left: 10px;
   color: #fff;
+}
+
+.wordpage-BtnGroup {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  white-space: nowrap;
 }
 
 .wordpage-Content {
@@ -73,4 +92,8 @@ textarea {
 .wordpage-Record_Title {
   font-size: 12px;
   color: #aaa;
+}
+
+.wordEditorPanel-Background {
+  z-index: 998 !important;
 }

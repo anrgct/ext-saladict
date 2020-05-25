@@ -19,7 +19,11 @@ import {
   useSubscription
 } from 'observable-hooks'
 import { AppConfig } from '@/app-config'
-import { isInDictPanel, isInSaladictExternal } from '@/_helpers/saladict'
+import {
+  isInDictPanel,
+  isInSaladictExternal,
+  isFirefox
+} from '@/_helpers/saladict'
 import {
   getTextFromSelection,
   getSentenceFromSelection
@@ -27,8 +31,6 @@ import {
 import { checkSupportedLangs } from '@/_helpers/lang-check'
 import { Message } from '@/typings/message'
 import { isTypeField, newSelectionWord } from './helper'
-
-const isFirefox = navigator.userAgent.includes('Firefox')
 
 export function createSelectTextStream(config: AppConfig | null) {
   if (!config) {
@@ -104,6 +106,7 @@ function withTouchMode(config: AppConfig) {
           dbClick: clickPeriodCount >= 2,
           mouseX: mouseup.clientX,
           mouseY: mouseup.clientY,
+          altKey: !!mouseup['altKey'],
           shiftKey: !!mouseup['shiftKey'],
           ctrlKey: !!mouseup['ctrlKey'],
           metaKey: !!mouseup['metaKey']
@@ -144,6 +147,7 @@ function withTouchMode(config: AppConfig) {
         if (
           direct ||
           (double && result.dbClick) ||
+          (holding.alt && result.altKey) ||
           (holding.shift && result.shiftKey) ||
           (holding.ctrl && result.ctrlKey) ||
           (holding.meta && result.metaKey)
@@ -204,6 +208,7 @@ function withoutTouchMode(config: AppConfig) {
         dbClick: clickPeriodCount >= 2,
         mouseX: mouseup.clientX,
         mouseY: mouseup.clientY,
+        altKey: mouseup.altKey,
         shiftKey: mouseup.shiftKey,
         ctrlKey: mouseup.ctrlKey,
         metaKey: mouseup.metaKey
@@ -286,6 +291,7 @@ export function useInPanelSelect(
               dbClick: clickPeriodCount >= 2,
               mouseX: mouseup.clientX,
               mouseY: mouseup.clientY,
+              altKey: mouseup.altKey,
               shiftKey: mouseup.shiftKey,
               ctrlKey: mouseup.ctrlKey,
               metaKey: mouseup.metaKey,
@@ -299,6 +305,7 @@ export function useInPanelSelect(
               mouseX: 0,
               mouseY: 0,
               dbClick: false,
+              altKey: false,
               shiftKey: false,
               ctrlKey: false,
               metaKey: false,
@@ -334,10 +341,7 @@ function clickPeriodCountStream(
 ) {
   return mouseup$.pipe(
     switchMap(() =>
-      timer(doubleClickDelay).pipe(
-        mapTo(false),
-        startWith(true)
-      )
+      timer(doubleClickDelay).pipe(mapTo(false), startWith(true))
     ),
     scan((sum: number, flag: boolean) => (flag ? sum + 1 : 0), 0)
   )

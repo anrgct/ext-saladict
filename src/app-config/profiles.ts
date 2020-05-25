@@ -28,6 +28,9 @@ export function _getDefaultProfile(id?: string) {
     /** show waveform control panel */
     waveform: true,
 
+    /** remember user manual dict folding on the same page */
+    stickyFold: false,
+
     dicts: {
       /** default selected dictionaries */
       selected: [
@@ -38,7 +41,6 @@ export function _getDefaultProfile(id?: string) {
         'urban',
         'vocabulary',
         'google',
-        'youdaotrans',
         'zdic',
         'guoyu',
         'liangan',
@@ -100,6 +102,7 @@ export function sentence(): ProfileStorage {
     'jukuu',
     'bing',
     'cnki',
+    'renren',
     'eudic',
     'cobuild',
     'cambridge',
@@ -139,7 +142,7 @@ export function scholar(): ProfileStorage {
     'etymonline',
     'cnki',
     'macmillan',
-    'oald',
+    'lexico',
     'websterlearner',
     'google',
     'youdaotrans',
@@ -160,7 +163,7 @@ export function scholar(): ProfileStorage {
     deutsch: false,
     others: false
   }
-  allDict.oald.defaultUnfold = {
+  allDict.lexico.defaultUnfold = {
     matchAll: false,
     english: false,
     chinese: false,

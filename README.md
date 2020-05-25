@@ -14,7 +14,7 @@
 
 Chrome/Firefox WebExtension. Feature-rich inline translator with PDF support.
 
-[【中文】](https://www.crimx.com/ext-saladict/)Chrome/Firefox 浏览器插件，网页划词翻译。
+[【中文说明】](./README-zh.md)Chrome/Firefox 浏览器插件，网页划词翻译。
 
 <p align="center">
   <a href="https://github.com/crimx/ext-saladict/releases/" target="_blank"><img src="https://raw.githubusercontent.com/wiki/crimx/ext-saladict/images/notebook.gif" /></a>
@@ -22,7 +22,10 @@ Chrome/Firefox WebExtension. Feature-rich inline translator with PDF support.
 
 ## Downloads
 
-[Chrome Web Store](https://chrome.google.com/webstore/detail/cdonnmffkdaoajfknoeeecmchibpmkmg?hl=en) / [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/ext-saladict/)
+- [Chrome Web Store](https://chrome.google.com/webstore/detail/cdonnmffkdaoajfknoeeecmchibpmkmg?hl=en)
+- [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/ext-saladict/)
+- [Microsoft Edge Addons](https://microsoftedge.microsoft.com/addons/detail/idghocbbahafpfhjnfhpbfbmpegphmmp)(Uploaded by @rumosky)
+- See [releases](https://github.com/crimx/ext-saladict/releases) for more.
 
 Saladict 7 is a complete rewrite with sophisticated interaction and buttery smooth experience. Built for speed, stability and customization.
 
@@ -45,13 +48,25 @@ Add a `.env` file following the `.env.example` format(leave empty if you don't u
 yarn build
 ```
 
-Artifacts can be found in `build/`
+Artifacts can be found in `build/`.
 
-If you want to add a dictionary, follow the [contribution guide](./CONTRIBUTING.md).
+## Development
 
-## How can I contribute / ?
+See the [contributing guide](./CONTRIBUTING.md).
+
+## How can I contribute?
 
 [CONTRIBUTING.md](./CONTRIBUTING.md)
+
+## Notic
+
+Saladict is a free and open-sourced project for study purpose only. Anyone can obtain a copy of Saladict free of charge. If you believe your legal rights have been violated please contact the [author](https://github.com/crimx) immediately.
+
+Saladict is licensed under [MIT](https://github.com/crimx/ext-saladict/blob/dev/LICENSE). You can use the source code freely as long as including a copy of license and copyright notice of Saladict.
+
+DO NOT use Saladict for any illegal or criminal activity. Saladict strongly condemns this behavior and will cooperate to the fullest extent possible in holding it accountable.
+
+As for copy-and-paste clone products Saladict has the responsibility to send corresponding reports and warnings to platforms and users.
 
 ## More screenshots:
 

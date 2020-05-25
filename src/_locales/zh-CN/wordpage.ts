@@ -1,7 +1,7 @@
 export const locale = {
   title: {
-    history: 'Saladict 查词记录',
-    notebook: 'Saladict 生词本'
+    history: '沙拉查词-查词记录',
+    notebook: '沙拉查词-生词本'
   },
 
   localonly: '仅本地保存',
@@ -54,9 +54,9 @@ export const locale = {
   },
 
   wordCount: {
-    selected: '已选中 {{count}} 个单词',
-    selected_plural: '已选中 {{count}} 个单词',
-    total: '共有 {{count}} 个单词',
-    total_plural: '共有 {{count}} 个单词'
+    selected: '已选 {{count}} 项',
+    selected_plural: '已选 {{count}} 项',
+    total: '共 {{count}} 项',
+    total_plural: '共 {{count}} 项'
   }
 }

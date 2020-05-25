@@ -26,11 +26,10 @@ storiesOf('Content Scripts|Dict Panel', module)
     })
   )
   // @ts-ignore: wrong storybook typing
-  .add('DictItem', ({ fontSize, withAnimation }) => {
+  .add('DictItem', ({ withAnimation }) => {
     return (
       <DictItem
         dictID="baidu"
-        fontSize={fontSize}
         withAnimation={withAnimation}
         panelCSS={''}
         preferredHeight={number('Preferred Height', 256)}
@@ -52,6 +51,8 @@ storiesOf('Content Scripts|Dict Panel', module)
         searchText={action('Search Text')}
         openDictSrcPage={action('Open Dict Source Page')}
         onHeightChanged={action('Height Changed')}
+        onUserFold={action('User fold')}
+        onInPanelSelect={action('In-panel Selection')}
         onSpeakerPlay={async src => action('Speaker Play')(src)}
       />
     )

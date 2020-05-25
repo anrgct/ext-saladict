@@ -13,7 +13,8 @@ import {
 import {
   withSaladictPanel,
   withSideEffect,
-  mockRuntimeMessage
+  mockRuntimeMessage,
+  withi18nNS
 } from '@/_helpers/storybook'
 import { newWord } from '@/_helpers/record-manager'
 import { MenuBar } from './MenuBar'
@@ -40,6 +41,7 @@ storiesOf('Content Scripts|Dict Panel/Menubar', module)
       })
     )
   )
+  .addDecorator(withi18nNS(['common', 'content']))
   .add('MenuBar', () => {
     const histories = Array.from(Array(5)).map((_, i) =>
       newWord({
@@ -72,6 +74,8 @@ storiesOf('Content Scripts|Dict Panel/Menubar', module)
         updateHistoryIndex={action('Update History Index')}
         isPinned={boolean('Is Pinned', false)}
         togglePin={action('Toggle Pin')}
+        isQSFocus={boolean('Is Quick Search Focus', false)}
+        toggleQSFocus={action('Toggle Quick Search Focus')}
         onClose={action('Close Panel')}
         onSwitchSidebar={action('Switch Sidebar')}
         profiles={profiles}
@@ -80,6 +84,7 @@ storiesOf('Content Scripts|Dict Panel/Menubar', module)
           profilesOption,
           profiles[0].id
         )}
+        onSelectProfile={action('Select Profile')}
         onDragAreaMouseDown={action('Darg Area Mousedown')}
         onDragAreaTouchStart={action('Darg Area Touchstart')}
         onHeightChanged={action('Height Changed')}

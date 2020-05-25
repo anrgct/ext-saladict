@@ -5,8 +5,8 @@ export interface CustomContextItem {
 
 export type ContextItem = string | CustomContextItem
 
-export function getAllContextMenus() {
-  const allContextMenus = {
+export function getAllContextMenus(): { [id: string]: ContextItem } {
+  return {
     baidu_page_translate: 'x',
     baidu_search: 'https://www.baidu.com/s?ie=utf-8&wd=%s',
     bing_dict: 'https://cn.bing.com/dict/?q=%s',
@@ -19,7 +19,8 @@ export function getAllContextMenus() {
     google_cn_page_translate: 'x',
     google_page_translate: 'x',
     google_search: 'https://www.google.com/#newwindow=1&q=%s',
-    google_translate: 'https://translate.google.cn/#auto/zh-CN/%s',
+    google_translate: 'https://translate.google.com/#auto/zh-CN/%s',
+    google_cn_translate: 'https://translate.google.cn/#auto/zh-CN/%s',
     guoyu: 'https://www.moedict.tw/%s',
     iciba: 'http://www.iciba.com/%s',
     liangan: 'https://www.moedict.tw/~%s',
@@ -30,17 +31,10 @@ export function getAllContextMenus() {
     saladict: 'x',
     sogou_page_translate: 'x',
     sogou: 'https://fanyi.sogou.com/#auto/zh-CHS/%s',
+    termonline: 'https://www.termonline.cn/list.htm?k=%s',
     view_as_pdf: 'x',
     youdao_page_translate: 'x',
     youdao: 'http://dict.youdao.com/w/%s',
     youglish: 'https://youglish.com/search/%s'
-  }
-
-  // Just for type check. Keys in allContextMenus are useful so no actual assertion
-  // eslint-disable-next-line no-unused-expressions
-  allContextMenus as { [id: string]: string }
-
-  return allContextMenus as typeof allContextMenus & {
-    [index: string]: ContextItem
   }
 }

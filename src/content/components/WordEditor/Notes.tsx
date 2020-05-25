@@ -37,7 +37,7 @@ import { CSSTransition } from 'react-transition-group'
 import { CtxTransList } from './CtxTransList'
 
 export interface NotesProps
-  extends Pick<WordEditorPanelProps, 'containerWidth' | 'colors'> {
+  extends Pick<WordEditorPanelProps, 'containerWidth'> {
   wordEditor: {
     word: Word
     translateCtx: boolean
@@ -64,13 +64,10 @@ export const Notes: FC<NotesProps> = props => {
   }, [props.ctxTrans])
 
   const [ctxTransResult, setCtxTransResult] = useState(() =>
-    Object.keys(props.ctxTrans).reduce(
-      (result, id) => {
-        result[id] = ''
-        return result
-      },
-      {} as CtxTranslateResults
-    )
+    Object.keys(props.ctxTrans).reduce((result, id) => {
+      result[id] = ''
+      return result
+    }, {} as CtxTranslateResults)
   )
 
   const [getRelatedWords, relatedWords$] = useObservableCallback<
@@ -87,10 +84,6 @@ export const Notes: FC<NotesProps> = props => {
         }
 
         return getWordsByText('notebook', word.text)
-          .then(date => {
-            console.log(date, 'z>>')
-            return date
-          })
           .then(words => words.filter(({ date }) => date !== word.date))
           .catch(() => [])
       }),
@@ -185,7 +178,6 @@ export const Notes: FC<NotesProps> = props => {
     <>
       <WordEditorPanel
         containerWidth={props.containerWidth}
-        colors={props.colors}
         title={t('content:wordEditor.title')}
         btns={panelBtns}
         onClose={closeEditor}
@@ -305,7 +297,6 @@ export const Notes: FC<NotesProps> = props => {
         {() => (
           <WordEditorPanel
             containerWidth={props.containerWidth - 100}
-            colors={props.colors}
             title={t('content:wordEditor.chooseCtxTitle')}
             onClose={() => setShowCtxTransList(false)}
             btns={[

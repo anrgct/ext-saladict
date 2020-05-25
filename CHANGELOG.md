@@ -2,6 +2,228 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [7.12.1](https://github.com/crimx/ext-saladict/compare/v7.12.0...v7.12.1) (2020-05-17)
+
+
+### Bug Fixes
+
+* **dicts:** update googledict style ([52e66df](https://github.com/crimx/ext-saladict/commit/52e66dfe282b74bc21a7bec4e91bf8a66a34f0cf))
+* **macmillan:** add styles on labels ([768ba78](https://github.com/crimx/ext-saladict/commit/768ba7851d7e22517a3d4a23dad135c103f229ab)), closes [#803](https://github.com/crimx/ext-saladict/issues/803)
+
+## [7.12.0](https://github.com/crimx/ext-saladict/compare/v7.11.2...v7.12.0) (2020-05-15)
+
+
+### Features
+
+* **command:** add shortcut for adding notebook ([524dd6c](https://github.com/crimx/ext-saladict/commit/524dd6c7a250c415a865f1587c79b09bef7cbc7c)), closes [#785](https://github.com/crimx/ext-saladict/issues/785)
+* **pdf:** open pdf viewer in standalone panel ([07f8c71](https://github.com/crimx/ext-saladict/commit/07f8c71195d1c0cf41f0592115921d226bebef07))
+* **selection:** add altKey for search modes ([fdc2ba5](https://github.com/crimx/ext-saladict/commit/fdc2ba56ad63d278668633c507a1e0c3a11070eb)), closes [#729](https://github.com/crimx/ext-saladict/issues/729)
+
+
+### Bug Fixes
+
+* respect qsFocus option ([2a9cf06](https://github.com/crimx/ext-saladict/commit/2a9cf062a29aea60aa15f473ba3b5a543f9dea49)), closes [#784](https://github.com/crimx/ext-saladict/issues/784)
+* upgrade neutrino-webextension ([5c1c48d](https://github.com/crimx/ext-saladict/commit/5c1c48d0b58a22ad172196e3106e00383b133eaa)), closes [#790](https://github.com/crimx/ext-saladict/issues/790)
+
+
+### Tests
+
+* **dicts:** update macmillan ([70150fd](https://github.com/crimx/ext-saladict/commit/70150fd41a34de85c24418932ba33d4cb8ce84d8))
+* **pdf:** update pdf tests ([6890c6d](https://github.com/crimx/ext-saladict/commit/6890c6d030415fa53adb741e7cfc0650fe43e044))
+
+### [7.11.2](https://github.com/crimx/ext-saladict/compare/v7.11.1...v7.11.2) (2020-05-06)
+
+
+### Bug Fixes
+
+* **wordeditor:** incorrect z-index ([3701084](https://github.com/crimx/ext-saladict/commit/3701084299cc3902a2e55e9e14d472fba9bcdf27)), closes [#780](https://github.com/crimx/ext-saladict/issues/780)
+* **wordpage:** refresh table on word changes ([5520feb](https://github.com/crimx/ext-saladict/commit/5520feb1b28eb73e689f5881cc07d9855c11fac9)), closes [#780](https://github.com/crimx/ext-saladict/issues/780)
+
+### [7.11.1](https://github.com/crimx/ext-saladict/compare/v7.11.0...v7.11.1) (2020-05-05)
+
+
+### Bug Fixes
+
+* **firefox:** add franc to dynamic chunks ([61580b1](https://github.com/crimx/ext-saladict/commit/61580b1217bd293885b854ad061d55b082b5be2b)), closes [#778](https://github.com/crimx/ext-saladict/issues/778)
+* **wordeditor:** fix z-index on internal page ([5c80ebb](https://github.com/crimx/ext-saladict/commit/5c80ebb186c782c0c4747fca3de97e035a334cb6))
+
+
+### Tests
+
+* update check-update ([6582938](https://github.com/crimx/ext-saladict/commit/6582938c814a92b5ab36a8ae20b4ebdf6a77cc98))
+
+## [7.11.0](https://github.com/crimx/ext-saladict/compare/v7.10.4...v7.11.0) (2020-05-01)
+
+
+### Features
+
+* **dicts:** add jikipedia ([046b850](https://github.com/crimx/ext-saladict/commit/046b850c83516c43022773bdd2ab6cacbb7696fa))
+* fix buggy axios ([9eb8172](https://github.com/crimx/ext-saladict/commit/9eb817242365961cd940bd5e54547b601678c7ce))
+* **panel:** add sticky folding ([7b2c352](https://github.com/crimx/ext-saladict/commit/7b2c3524b452925d126d6bd15770649a353e2068)), closes [#765](https://github.com/crimx/ext-saladict/issues/765)
+* **panel:** remember last standalone window position ([3d25428](https://github.com/crimx/ext-saladict/commit/3d254280e6c2a16a7bd5de99eace55090c04cc88)), closes [#766](https://github.com/crimx/ext-saladict/issues/766)
+* **profiles:** add shortcuts for top profiles ([de9ca07](https://github.com/crimx/ext-saladict/commit/de9ca077c23147859ebc648b3202faa5b25bca15))
+* added option qsFocus ([51e59f9](https://github.com/crimx/ext-saladict/commit/51e59f91fb27ed3c942d2f9c4aa88e31f78eef84)), closes [#764](https://github.com/crimx/ext-saladict/issues/764)
+
+
+### Bug Fixes
+
+* **badge:** remove badge text ([873b1c7](https://github.com/crimx/ext-saladict/commit/873b1c77d3655e4b10dcb389108aabf9c9e31b4c)), closes [#770](https://github.com/crimx/ext-saladict/issues/770)
+* **options:** prevent panel being opened accidentally ([a673c9f](https://github.com/crimx/ext-saladict/commit/a673c9f94f46d19121058b0f534a5aaa750d8453)), closes [#769](https://github.com/crimx/ext-saladict/issues/769)
+* **panel:** do not update search box text on selection ([b104405](https://github.com/crimx/ext-saladict/commit/b1044050d92ee4fb5a2f4bd594d2bd9ca44eca12))
+* **pdf:** remove 'unsafe-eval' CSP ([eaea459](https://github.com/crimx/ext-saladict/commit/eaea459ae500cf84cea3f65e59c573d6816d222d))
+
+
+### Build System
+
+* fix script arguments ([df78f19](https://github.com/crimx/ext-saladict/commit/df78f199b71fd4b018903fd57e00c39928986c1c))
+
+
+### Tests
+
+* **background:** remove update check ([1f1b5ff](https://github.com/crimx/ext-saladict/commit/1f1b5ffa7ed8fb99773f645eb20555a00b12bacd))
+* **storybook:** add path pattern ([61a883a](https://github.com/crimx/ext-saladict/commit/61a883a928aaa7c640194592ceb42a650e6d2647))
+
+### [7.10.4](https://github.com/crimx/ext-saladict/compare/v7.10.3...v7.10.4) (2020-04-27)
+
+### [7.10.3](https://github.com/crimx/ext-saladict/compare/v7.10.2...v7.10.3) (2020-04-26)
+
+### [7.10.2](https://github.com/crimx/ext-saladict/compare/v7.10.1...v7.10.2) (2020-04-26)
+
+
+### Bug Fixes
+
+* **dicts:** cnki should respect options ([c78d2d7](https://github.com/crimx/ext-saladict/commit/c78d2d7ae41dc08d1c7a8a3900613392825c3527)), closes [#752](https://github.com/crimx/ext-saladict/issues/752)
+* **options:** smooth dark/bright transition ([5433cac](https://github.com/crimx/ext-saladict/commit/5433cac8f074e00a597e91c6804cf3fc8acf3bef))
+* **options:** typo ([c66ed05](https://github.com/crimx/ext-saladict/commit/c66ed0586a1662d2a9c4611f8ef8e2c4c7099b60))
+* **selection:** cancel instant capture on keyup ([c6dbaa7](https://github.com/crimx/ext-saladict/commit/c6dbaa7ef92c29827b6a35db7bc6824c8696843f)), closes [#756](https://github.com/crimx/ext-saladict/issues/756)
+
+### [7.10.1](https://github.com/crimx/ext-saladict/compare/v7.10.0...v7.10.1) (2020-04-24)
+
+
+### Bug Fixes
+
+* **wordpage:** firefox layout ([7165fda](https://github.com/crimx/ext-saladict/commit/7165fda9101b24a229e15a64396ef39ef1c7fb85))
+
+## [7.10.0](https://github.com/crimx/ext-saladict/compare/v7.9.3...v7.10.0) (2020-04-24)
+
+
+### Features
+
+* add token settings ([df2924f](https://github.com/crimx/ext-saladict/commit/df2924f7f1a88ce50c21e6019ddf63c73f3a2ae1))
+
+
+### Bug Fixes
+
+* **context-menus:** encode selection text ([0da9e84](https://github.com/crimx/ext-saladict/commit/0da9e84fd2c5805d66af637f8977340408b2d21a))
+* **context-menus:** load locale ([e1981b1](https://github.com/crimx/ext-saladict/commit/e1981b145680a7b2fbce86be5a93e50e0266beac))
+* **googledict:** audio link ([407fa9b](https://github.com/crimx/ext-saladict/commit/407fa9b669800bde3ccc29b217e8515d810f022d))
+* **i18n:** make ready changes every time ([2a03730](https://github.com/crimx/ext-saladict/commit/2a0373045d343c77782ca327bce3d6bdf40b7c0c))
+* **i18n:** proper init language without reloading ([bca03cb](https://github.com/crimx/ext-saladict/commit/bca03cb2f3c0d3fb7258b594e69661512606877d))
+* **options:** avoid stale values ([d98b53a](https://github.com/crimx/ext-saladict/commit/d98b53a7973edca8da7274f7fc774da532e30e5e))
+* **options:** layout adjustment ([84496e6](https://github.com/crimx/ext-saladict/commit/84496e698cba7656ea0a46b8dd959fee00f1faaf))
+* **options:** make data immutable ([fc967db](https://github.com/crimx/ext-saladict/commit/fc967db6cb3eed729c9bb3dfd1b3ba9545d0c917))
+* **options:** only get values from item name ([fea31ab](https://github.com/crimx/ext-saladict/commit/fea31abd5ade22c9ff44a0a8115519a5586ff1c3))
+* **options:** reduce re-rendering of the whole form ([02f61a9](https://github.com/crimx/ext-saladict/commit/02f61a9105b0adbf87a17b4170e6522bcc5de370))
+* **options:** rerender error boundary on entry change ([7450057](https://github.com/crimx/ext-saladict/commit/7450057896ce10bd52f5c0602353e2532563d999))
+* **options:** search words on options page ([4bfc211](https://github.com/crimx/ext-saladict/commit/4bfc211d26286d71b178ffcecf9145d7ec222b15))
+* **panel:** correct standalone position on multi-screen ([f2f152f](https://github.com/crimx/ext-saladict/commit/f2f152ff604260e6e65a05b7dfea7d84f8d07e96))
+* **panel:** disable external style reset on standalone panel ([c2f26be](https://github.com/crimx/ext-saladict/commit/c2f26bec4ae533b3f22610fe5ce7ad722e15d446))
+* **panel:** hide external divs ([d584e31](https://github.com/crimx/ext-saladict/commit/d584e313e4cbf6370a8d8c397ce32f4fb9659976)), closes [#703](https://github.com/crimx/ext-saladict/issues/703)
+* **panel:** more robust dargging ([e5a876b](https://github.com/crimx/ext-saladict/commit/e5a876b5475e29538874834ed985cde21a7a5ae2)), closes [#747](https://github.com/crimx/ext-saladict/issues/747)
+* **panel:** mta font size ([0b261fd](https://github.com/crimx/ext-saladict/commit/0b261fd23d9ea9512ffc59d3adafdd14967b69c7)), closes [#721](https://github.com/crimx/ext-saladict/issues/721)
+* **panel:** profiles float box ([7b59fb3](https://github.com/crimx/ext-saladict/commit/7b59fb3246bca4c99acd8129ddb981c913affd56))
+* **pdf:** update pdf script ([f419402](https://github.com/crimx/ext-saladict/commit/f419402bfe96e9759076f865c0ea813a8dc011d1))
+* **selection:** instant selection ([85d43a0](https://github.com/crimx/ext-saladict/commit/85d43a0a03519985828362c99556719c86761f84)), closes [#742](https://github.com/crimx/ext-saladict/issues/742)
+* **sync-services:** ignore word addition from sync services ([685cd02](https://github.com/crimx/ext-saladict/commit/685cd02e09adb11bf508ef9ae3033d4d4591763c)), closes [#717](https://github.com/crimx/ext-saladict/issues/717)
+* content style origin ([230275d](https://github.com/crimx/ext-saladict/commit/230275d5db56e65de9570d27d62ceed1f0618a32))
+
+
+### Build System
+
+* better chunk naming for dict favicons ([d1f65fd](https://github.com/crimx/ext-saladict/commit/d1f65fde14b23992ce7a1969a0a3b778a4caef70))
+* control split chunks ([858ea64](https://github.com/crimx/ext-saladict/commit/858ea644d19016218b2b4481fbd63e80e8345f65))
+* fix dotenv ([07c7fc6](https://github.com/crimx/ext-saladict/commit/07c7fc6b78c1acc84607a0946775d2332f875ffb))
+
+
+### Tests
+
+* **panel:** update storybook ([657da12](https://github.com/crimx/ext-saladict/commit/657da12dd418a99a5d13f83158ed9f1d51fe3c33))
+
+### [7.9.3](https://github.com/crimx/ext-saladict/compare/v7.9.2...v7.9.3) (2020-03-19)
+
+
+### Bug Fixes
+
+* **panel:** prevent ff flash ([#691](https://github.com/crimx/ext-saladict/issues/691)) ([d18df80](https://github.com/crimx/ext-saladict/commit/d18df80956e8423d808e9a8ac64458ddc73b3b22))
+* **word-editor:** inner panel not showing up ([b8c6064](https://github.com/crimx/ext-saladict/commit/b8c606486d69fc00c1babe5d6569bcb61f26a801)), closes [#694](https://github.com/crimx/ext-saladict/issues/694)
+
+### [7.9.2](https://github.com/crimx/ext-saladict/compare/v7.9.1...v7.9.2) (2020-03-14)
+
+
+### Bug Fixes
+
+* **dicts:** wrong dict config ([551a0b3](https://github.com/crimx/ext-saladict/commit/551a0b30db29c14dd093d33f01c440d669846fc4))
+
+### [7.9.1](https://github.com/crimx/ext-saladict/compare/v7.9.0...v7.9.1) (2020-03-10)
+
+
+### Bug Fixes
+
+* **dicts:** add fallback language for machine translate ([60b10da](https://github.com/crimx/ext-saladict/commit/60b10da2dbb890270965de7b24a6672ced4ce579)), closes [#674](https://github.com/crimx/ext-saladict/issues/674)
+* **dicts:** enhance cjk detection ([8311d9e](https://github.com/crimx/ext-saladict/commit/8311d9e30d01740930725cd9a83adfa5a92bf26e))
+* **dicts:** remove caching async function ([03d7866](https://github.com/crimx/ext-saladict/commit/03d78669dacece312ba7bf2a5d8763d9b760730b))
+
+## [7.9.0](https://github.com/crimx/ext-saladict/compare/v7.8.0...v7.9.0) (2020-03-09)
+
+
+### Features
+
+* **dicts:** add lexico ([a86fc7d](https://github.com/crimx/ext-saladict/commit/a86fc7db85f8646f6326b6e1dbbd235ce930c7d6))
+* **dicts:** add renren ([b4dc38d](https://github.com/crimx/ext-saladict/commit/b4dc38da25e838f1c9869d66d6cb2b9ecfbf3fb5))
+
+
+### Bug Fixes
+
+* **dicts:** correct tts language ([76eb34d](https://github.com/crimx/ext-saladict/commit/76eb34d70fe802b3117a5c31a2e8f1d732f2f34e)), closes [#659](https://github.com/crimx/ext-saladict/issues/659)
+* **renren:** prevent detail click event being captured by panel ([921d102](https://github.com/crimx/ext-saladict/commit/921d102deac23ec19196a41512883d645c73ae13))
+* **wordpage:** keyword matching ([b9a1a3e](https://github.com/crimx/ext-saladict/commit/b9a1a3e211a405595724a9e466ffc8d9a2c7ec1d))
+
+
+### Tests
+
+* fix bing fixtures ([a7731a2](https://github.com/crimx/ext-saladict/commit/a7731a22131dc358c3036b14d59b9a3d33344a53))
+
+## [7.8.0](https://github.com/crimx/ext-saladict/compare/v7.7.6...v7.8.0) (2020-02-13)
+
+
+### Bug Fixes
+
+* remove extra clipboard search on command ([0b7166e](https://github.com/crimx/ext-saladict/commit/0b7166e)), closes [#647](https://github.com/crimx/ext-saladict/issues/647)
+* space escape ([2c31562](https://github.com/crimx/ext-saladict/commit/2c31562)), closes [#635](https://github.com/crimx/ext-saladict/issues/635)
+
+
+### Features
+
+* add standalone word editor ([24d487a](https://github.com/crimx/ext-saladict/commit/24d487a)), closes [#608](https://github.com/crimx/ext-saladict/issues/608)
+
+
+
+### [7.7.6](https://github.com/crimx/ext-saladict/compare/v7.7.5...v7.7.6) (2020-02-03)
+
+
+
+### [7.7.5](https://github.com/crimx/ext-saladict/compare/v7.7.4...v7.7.5) (2020-02-03)
+
+
+
+### [7.7.4](https://github.com/crimx/ext-saladict/compare/v7.7.3...v7.7.4) (2020-02-03)
+
+
+
+### [7.7.3](https://github.com/crimx/ext-saladict/compare/v7.7.2...v7.7.3) (2020-02-02)
+
+
+
 ### [7.7.2](https://github.com/crimx/ext-saladict/compare/v7.7.1...v7.7.2) (2020-01-27)
 
 

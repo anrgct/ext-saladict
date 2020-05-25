@@ -1,6 +1,6 @@
 import React, { FC, useRef, useEffect } from 'react'
 import CSSTransition from 'react-transition-group/CSSTransition'
-import i18next from 'i18next'
+import { TFunction } from 'i18next'
 import {
   useObservableCallback,
   useObservableState,
@@ -8,13 +8,14 @@ import {
   identity
 } from 'observable-hooks'
 import { merge, combineLatest } from 'rxjs'
+import { filter, map, distinctUntilChanged, mapTo } from 'rxjs/operators'
 import { focusBlur } from '@/_helpers/observables'
-import { filter, map, distinctUntilChanged } from 'rxjs/operators'
+import { message } from '@/_helpers/browser-api'
 import { Suggest } from './Suggest'
 import { SearchBtn } from './MenubarBtns'
 
 export interface SearchBoxProps {
-  t: i18next.TFunction
+  t: TFunction
   /** Search box text */
   text: string
   /** Focus search box */
@@ -54,7 +55,8 @@ export const SearchBox: FC<SearchBoxProps> = props => {
             // only show suggest when start typing
             searchBoxFocusBlur$.pipe(filter(isFocus => !isFocus)),
             suggestFocusBlur$,
-            onShowSugget$
+            onShowSugget$,
+            message.createStream('SEARCH_TEXT_BOX').pipe(mapTo(false))
           )
         ).pipe(
           map(([[enableSuggest, text], shouldShowSuggest]) =>
@@ -62,7 +64,7 @@ export const SearchBox: FC<SearchBoxProps> = props => {
           ),
           distinctUntilChanged()
         ),
-      [props.enableSuggest, props.text] as [boolean, string]
+      [props.enableSuggest, props.text]
     ),
     false
   )

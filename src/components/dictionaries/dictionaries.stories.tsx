@@ -7,7 +7,8 @@ import { withKnobs, select, number, boolean } from '@storybook/addon-knobs'
 import {
   withSaladictPanel,
   withSideEffect,
-  mockRuntimeMessage
+  mockRuntimeMessage,
+  withi18nNS
 } from '@/_helpers/storybook'
 import { DictItem } from '@/content/components/DictItem/DictItem'
 import { getDefaultConfig, DictID } from '@/app-config'
@@ -51,6 +52,7 @@ const stories = storiesOf('Content Scripts|Dictionaries', module)
       height: 'auto'
     })
   )
+  .addDecorator(withi18nNS(['content', 'dicts']))
   .addDecorator(withKnobs)
 
 Object.keys(getAllDicts())
@@ -93,9 +95,11 @@ function Dict(props: {
     mockRequest: MockRequest
   }
 
-  const locales = require('@/components/dictionaries/' +
+  const localesModule = require('@/components/dictionaries/' +
     props.dictID +
-    '/_locales.json')
+    '/_locales')
+
+  const locales = localesModule.locales || localesModule
 
   const { search } = require('@/components/dictionaries/' +
     props.dictID +
@@ -127,7 +131,7 @@ function Dict(props: {
         return boolean(name, options[key])
       case 'number':
         return number(name, options[key])
-      case 'string':
+      case 'string': {
         const values: string[] =
           profiles.dicts.all[props.dictID]['options_sel'][key]
         return select(
@@ -138,6 +142,7 @@ function Dict(props: {
           }, {}),
           options[key]
         )
+      }
       default:
         return options[key]
     }
@@ -168,7 +173,6 @@ function Dict(props: {
     search(searchText, getDefaultConfig(), profiles, {
       isPDF: false
     }).then(async ({ result }) => {
-      await timer(Math.random() * 3000)
       setStatus('FINISH')
       setResult(result)
     })
@@ -177,7 +181,6 @@ function Dict(props: {
   return (
     <DictItem
       dictID={props.dictID}
-      fontSize={props.fontSize}
       withAnimation={props.withAnimation}
       panelCSS={''}
       preferredHeight={number('Preferred Height', 256)}
@@ -186,6 +189,7 @@ function Dict(props: {
       searchText={action('Search Text')}
       openDictSrcPage={action('Open Dict Source Page')}
       onHeightChanged={action('Height Changed')}
+      onUserFold={action('User Fold')}
       onSpeakerPlay={src => {
         action('Speaker Play')(src)
         return Promise.resolve()

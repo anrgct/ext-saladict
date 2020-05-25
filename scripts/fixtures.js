@@ -1,6 +1,7 @@
 const path = require('path')
 const fs = require('fs-extra')
 const axios = require('axios')
+const SocksProxyAgent = require('socks-proxy-agent')
 const fglob = require('fast-glob')
 const cliProgress = require('cli-progress')
 const randomMua = require('random-mua')
@@ -10,25 +11,50 @@ const env = require('dotenv').config({
 }).parsed
 
 // download fixtures
+// default only download non-existed files
 // --delete remove all fixtures
+// --update remove then download all fixtures
+// --fileMatchPattern filter file path with regex
 
-if (argv.delete) {
-  deletion()
-} else {
-  main().catch(console.log)
-}
+main().catch(console.log)
 
 async function main() {
-  const proxyConfig = env.PROXY_HOST
-    ? {
+  if (argv.delete) {
+    deletion()
+  } else {
+    if (argv.update) {
+      await deletion()
+    }
+    add()
+  }
+}
+
+async function add() {
+  let proxyConfig = {}
+
+  if (env.PROXY_HOST) {
+    if (env.PROXY_PROTOCAL && env.PROXY_PROTOCAL.startsWith('socks')) {
+      const httpsAgent = new SocksProxyAgent(
+        `socks5://${env.PROXY_HOST}:${env.PROXY_PORT}`
+      )
+      proxyConfig = {
+        httpsAgent,
+        httpAgent: httpsAgent
+      }
+    } else {
+      proxyConfig = {
         proxy: {
           host: env.PROXY_HOST,
           port: env.PROXY_PORT
         }
       }
-    : {}
+    }
+  }
+
   if (env.PROXY_HOST) {
-    console.log(`with proxy:${env.PROXY_HOST}:${env.PROXY_PORT}`)
+    console.log(
+      `with proxy: ${env.PROXY_PROTOCAL}://${env.PROXY_HOST}:${env.PROXY_PORT}`
+    )
   }
 
   const progressBars = new cliProgress.MultiBar({
@@ -42,11 +68,16 @@ async function main() {
 
   const errors = []
 
-  const fixturesPath = await fglob(['**/fixtures.js'], {
+  let fixturesPath = await fglob(['**/fixtures.js'], {
     cwd: path.join(__dirname, '../test'),
     absolute: true,
     onlyFiles: true
   })
+
+  if (argv.fileMatchPattern) {
+    const matcher = new RegExp(argv.fileMatchPattern)
+    fixturesPath = fixturesPath.filter(filePath => matcher.test(filePath))
+  }
 
   await Promise.all(fixturesPath.map(fetchDictFixtures))
 
@@ -82,7 +113,7 @@ async function main() {
       const dictname = /[\\/]+([^\\/]+)[\\/]+fixtures.js$/.exec(fixturePath)[1]
 
       const pgBar = progressBars.create(100, 0, {
-        file: `${dictname}/fixture${index + 1}`,
+        file: `${dictname}/fixture${index * 1 + 1}`,
         status: 'downloading'
       })
 
@@ -151,13 +182,16 @@ async function main() {
 }
 
 async function deletion() {
-  const fixturesPath = await fglob(['**/response'], {
+  let fixturesPath = await fglob(['**/response'], {
     cwd: path.join(__dirname, '../test'),
     absolute: true,
     onlyDirectories: true
   })
 
-  fixturesPath.forEach(fixturePath => {
-    fs.remove(fixturePath)
-  })
+  if (argv.fileMatchPattern) {
+    const matcher = new RegExp(argv.fileMatchPattern)
+    fixturesPath = fixturesPath.filter(filePath => matcher.test(filePath))
+  }
+
+  await Promise.all(fixturesPath.map(fixturePath => fs.remove(fixturePath)))
 }
